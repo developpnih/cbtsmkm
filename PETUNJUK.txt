@@ -1,0 +1,8 @@
+CBT SEKOLAH - PETUNJUK PASANG
+1. Buat Google Spreadsheet baru > Extensions > Apps Script > tempel isi Code.gs
+2. Jalankan fungsi "setup" sekali (izinkan akses Spreadsheet & Drive)
+3. Deploy > New deployment > Web app (Execute as: Me, Access: Anyone) > salin URL
+4. Buka script.js, ganti GANTI_DENGAN_URL_WEB_APP di baris 2 dengan URL tadi
+5. Upload index.html, style.css, script.js, template_soal.docx ke hosting (GitHub Pages/Netlify)
+6. Buka halaman > klik "Admin" (password awal: admin123, segera ganti di Pengaturan)
+Update Code.gs: Deploy > Manage deployments > Edit > New version
