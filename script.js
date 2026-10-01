@@ -1,5 +1,5 @@
 // ====== GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA ======
-const API='GANTI_DENGAN_URL_WEB_APP';
+const API='https://script.google.com/macros/s/AKfycbzQyOkOlydtiI15ZNCFwKtIWz5JXAJSGdTXIfKxM8HCmt59yP1DB6lzMEhyAPX-WETW/exec';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const H={Siswa:['nis','nama','kelas','password','status','alarm','pelanggaran'],Mapel:['kode','nama','durasi','status','jenjang'],Soal:['id','mapel','soal','a','b','c','d','e','kunci','status'],Nilai:['nis','nama','kelas','mapel','benar','salah','nilai','waktu']};
