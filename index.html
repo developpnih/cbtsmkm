@@ -19,7 +19,6 @@
       <button class="btn">Masuk Ujian</button>
       <p id="lmsg" class="err"></p>
     </form>
-    <a id="adminLink" class="tiny">Admin</a>
   </div>
 </section>
 
@@ -43,27 +42,10 @@
     <div class="card"><div id="grid" class="grid"></div><button class="btn ok" id="finish">Selesai &amp; Kirim</button></div>
   </div>
 </section>
-
-<section id="admin" hidden>
-  <header class="bar noprint"><b>Admin CBT</b><button class="btn ghost light" id="aout">Keluar</button></header>
-  <nav id="tabs" class="tabs noprint"></nav>
-  <div class="wrap wide">
-    <div id="tools" class="row noprint"></div>
-    <div id="tbl" class="tw"></div>
-    <div id="cards" hidden></div>
-    <form id="fset" class="card" hidden>
-      <label>Nama Sekolah<input name="sekolah"></label>
-      <label>URL Logo (link gambar langsung)<input name="logo"></label>
-      <label>Password Admin Baru (kosongkan jika tidak diganti)<input name="admin" type="password"></label>
-      <button class="btn">Simpan</button>
-    </form>
-  </div>
-</section>
 </main>
 
 <div id="warn" hidden><div>⚠️<h1>PERINGATAN!</h1><p>Anda meninggalkan halaman ujian.<br>Hubungi pengawas untuk mematikan alarm.</p></div></div>
-<dialog id="dlg"></dialog>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="config.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

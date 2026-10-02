@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Admin CBT</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<section id="gate" class="gate">
+  <form id="gf" class="card center" style="width:100%;max-width:380px">
+    <div style="font-size:2.4rem">🔐</div>
+    <h1>Admin CBT</h1>
+    <p class="muted">Masukkan password admin</p>
+    <label>Password<input id="gp" type="password" required autofocus></label>
+    <button class="btn">Masuk</button>
+    <p id="gmsg" class="err"></p>
+  </form>
+</section>
+
+<div id="app" class="app" hidden>
+  <aside id="side" class="side">
+    <div class="brand"><img id="blogo" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563eb'/%3E%3Ctext x='32' y='42' font-size='30' text-anchor='middle' fill='white'%3ECBT%3C/text%3E%3C/svg%3E"><b><span id="bn">CBT</span><small>Panel Admin</small></b></div>
+    <nav id="nav"></nav>
+    <button class="logout" id="out">⎋ Keluar</button>
+  </aside>
+  <div class="main">
+    <header class="top"><button class="btn ghost sm" id="burger">☰</button><h2 id="title"></h2></header>
+    <div id="alert" hidden></div>
+    <div id="view"></div>
+  </div>
+</div>
+<dialog id="dlg"></dialog>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

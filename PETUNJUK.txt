@@ -1,8 +1,18 @@
 CBT SEKOLAH - PETUNJUK PASANG
+
+BACKEND  : Code.gs  (Google Apps Script + Google Spreadsheet)
+FRONTEND SISWA : index.html, style.css, script.js
+FRONTEND ADMIN : admin.html, admin.css, admin.js
+BERSAMA  : config.js (tempat URL Web App), template_soal.docx
+
 1. Buat Google Spreadsheet baru > Extensions > Apps Script > tempel isi Code.gs
 2. Jalankan fungsi "setup" sekali (izinkan akses Spreadsheet & Drive)
 3. Deploy > New deployment > Web app (Execute as: Me, Access: Anyone) > salin URL
-4. Buka script.js, ganti GANTI_DENGAN_URL_WEB_APP di baris 2 dengan URL tadi
-5. Upload index.html, style.css, script.js, template_soal.docx ke hosting (GitHub Pages/Netlify)
-6. Buka halaman > klik "Admin" (password awal: admin123, segera ganti di Pengaturan)
+4. Buka config.js, ganti GANTI_DENGAN_URL_WEB_APP dengan URL tadi (cukup di satu file ini)
+5. Upload semua file frontend ke hosting (GitHub Pages / Netlify)
+6. Siswa buka  : alamat-anda/index.html
+   Admin buka  : alamat-anda/admin.html  (password awal: admin123, ganti di Pengaturan)
+
+Kelas tujuan ujian (kolom "Kelas" di Mapel & Ujian), pisahkan dengan koma:
+  SEMUA | X | XI | XII | X TSM 1, X TSM 2
 Update Code.gs: Deploy > Manage deployments > Edit > New version
