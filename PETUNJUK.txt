@@ -13,6 +13,7 @@ BERSAMA  : config.js (tempat URL Web App), template_soal.docx
 6. Siswa buka  : alamat-anda/index.html
    Admin buka  : alamat-anda/admin.html  (password awal: admin123, ganti di Pengaturan)
 
-Kelas tujuan ujian (kolom "Kelas" di Mapel & Ujian), pisahkan dengan koma:
-  SEMUA | X | XI | XII | X TSM 1, X TSM 2
+Kelas: tambahkan dulu di menu Data Kelas (atau klik "Ambil dari Data Siswa").
+Kelas tujuan ujian dipilih lewat kotak centang di Mapel & Ujian:
+  Semua kelas | Semua kelas X / XI / XII | per kelas (mis. X TSM 1, X TSM 2)
 Update Code.gs: Deploy > Manage deployments > Edit > New version
