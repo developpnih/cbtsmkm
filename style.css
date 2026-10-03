@@ -43,3 +43,5 @@ dialog{border:0;border-radius:16px;max-width:520px;width:calc(100% - 24px);backg
 @media print{.noprint,#tools,#tbl,#fset{display:none!important}body{background:#fff}.wrap{padding:0}#cards{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.card{padding:16px}}
 .qimg{display:block;max-width:100%;max-height:340px;margin:8px 0;border-radius:8px;-webkit-user-drag:none;pointer-events:none}.opt .qimg{max-height:180px}
+body.busy::before{content:'';position:fixed;top:0;left:0;height:3px;width:100%;background:var(--p);z-index:999;animation:ld 1s ease-in-out infinite}@keyframes ld{from{transform:scaleX(0);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}
+.btn:disabled{opacity:.55;cursor:wait}

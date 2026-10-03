@@ -14,12 +14,13 @@ function leave(){if(!inExam)return;const was=!!siren;alarmOn();if(!was)post({act
 document.addEventListener('visibilitychange',()=>document.hidden&&leave());
 addEventListener('blur',leave);
 ['contextmenu','copy','cut','paste'].forEach(e=>document.addEventListener(e,x=>inExam&&x.preventDefault()));
-setInterval(async()=>{if(!U||!inExam)return;const r=await post({act:'poll',nis:U.nis,pw:U.pw});if(!r.ok)return;if(r.blokir){inExam=0;alarmOff();alert('Akses Anda diblokir oleh pengawas.');location.reload()}
- if(r.alarm)alarmOn();else alarmOff()},4000);
+(function pl(){setTimeout(async()=>{if(U&&inExam){const r=await post({act:'poll',nis:U.nis},1);if(r.ok){if(r.blokir){inExam=0;alarmOff();alert('Akses Anda diblokir oleh pengawas.');location.reload()}
+ if(r.alarm)alarmOn();else alarmOff()}}pl()},siren?4000:15000)})();
 
 // ---------- Siswa ----------
-$('#fl').onsubmit=async e=>{e.preventDefault();unlock();$('#lmsg').textContent='Memeriksa...';const nis=$('#nis').value.trim(),pw=$('#pw').value.trim();
- const r=await post({act:'login',nis,pw});if(!r.ok)return $('#lmsg').textContent=r.msg;$('#lmsg').textContent='';U={nis,pw,...r};menu()};
+let LB=0;const doLogin=async()=>{if(LB)return;const nis=$('#nis').value.trim(),pw=$('#pw').value.trim();if(!nis||!pw)return $('#lmsg').textContent='Isi NIS dan password';LB=1;unlock();const b=$('#fl button');b.disabled=true;b.textContent='Memeriksa...';$('#lmsg').textContent='';
+ const r=await post({act:'login',nis,pw});LB=0;b.disabled=false;b.textContent='Masuk Ujian';if(!r.ok)return $('#lmsg').textContent=r.msg;U={nis,pw,...r};menu()};
+$('#fl').onsubmit=e=>{e.preventDefault();doLogin()};['#nis','#pw'].forEach(i=>$(i).onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();doLogin()}});
 $('#logout').onclick=()=>{U=null;show('login');$('#fl').reset()};
 function menu(msg){show('menu');$('#mnama').textContent=U.nama;$('#mkelas').textContent='Kelas '+U.kelas+' · NIS '+U.nis;
  $('#mlist').innerHTML=(msg?`<p class="err" style="color:var(--ok)">${msg}</p>`:'')+(U.mapel.length?U.mapel.map(m=>`<div class="ex"><div><b>${esc(m.nama)}</b><div class="muted">${m.durasi} menit</div></div>${m.done?'<span class="tag">Selesai</span>':`<button class="btn" data-k="${esc(m.kode)}">Mulai</button>`}</div>`).join(''):'<p class="muted">Belum ada ujian yang aktif.</p>');

@@ -14,24 +14,33 @@ const FD={
 const NAV=[['dash','📊','Dashboard'],['Kelas','🏫','Data Kelas'],['Siswa','👥','Data Siswa'],['Mapel','📚','Mapel & Ujian'],['Soal','📝','Bank Soal'],['Nilai','🏆','Nilai'],['kartu','🪪','Kartu Login'],['set','⚙️','Pengaturan']];
 let AD=sessionStorage.getItem('adm')||'',T='',V='',D=[],SIS=[],MP=[],MC={},KL=[],ref;
 const adm=(act,o)=>post({act,admin:AD,...o});
-const L=async n=>{const r=await adm('a_list',{name:n});return r.ok?r.rows:[]};
+const CA={},CT={},NEED={dash:['Siswa','Mapel','Soal','Nilai'],Kelas:['Kelas','Siswa'],Siswa:['Siswa'],Mapel:['Mapel','Soal'],Soal:['Soal','Mapel'],Nilai:['Nilai','Mapel'],kartu:['Siswa'],set:[]};
+async function ld(ns,q){const r=await post({act:'a_multi',admin:AD,names:ns},q);if(!r.ok)return false;ns.forEach(n=>{CA[n]=r.data[n]||[];CT[n]=Date.now()});return true}
+const L=async n=>{if(!CA[n])await ld([n]);return CA[n]||[]};
+async function bg(ns){ns=ns.filter(n=>Date.now()-(CT[n]||0)>8000);if(!ns.length)return;const o=JSON.stringify(ns.map(n=>CA[n]));if(await ld(ns,1)&&JSON.stringify(ns.map(n=>CA[n]))!=o&&!$('#dlg').open)go(V,1)}
+function mc(){MC={};(CA.Soal||[]).forEach(x=>MC[x.mapel]=(MC[x.mapel]||0)+(x.status=='nonaktif'?0:1))}
+function ui(){if(CA.Siswa)SIS=CA.Siswa;if(CA.Mapel)MP=CA.Mapel;mc();if($('#tbl')&&CA[T]){D=CA[T];draw()}else if(V=='dash')vDash()}
+async function mut(n,act,o,fn,ex={}){const bak=CA[n];if(fn)CA[n]=fn((bak||[]).map(x=>({...x})));ui();
+ const r=await adm(act,{name:n,obj:o,...ex});if(!r.ok){CA[n]=bak;ui();alert(r.msg||'Gagal menyimpan, coba lagi')}else setTimeout(()=>{CT[n]=0;bg([n])},2500);return r}
 const norm=s=>String(s??'').toUpperCase().replace(/[\s\-_]+/g,' ').trim();
 const alarmN=s=>s.filter(x=>String(x.alarm)=='1');
 
 // ---------- Login & navigasi ----------
-$('#gf').onsubmit=e=>{e.preventDefault();enter($('#gp').value)};
+let GB=0;const gl=async()=>{if(GB)return;GB=1;const b=$('#gf button');b.disabled=true;b.textContent='Memeriksa...';$('#gmsg').textContent='';await enter($('#gp').value);GB=0;b.disabled=false;b.textContent='Masuk'};
+$('#gf').onsubmit=e=>{e.preventDefault();gl()};$('#gp').onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();gl()}};
 $('#out').onclick=()=>{sessionStorage.removeItem('adm');location.reload()};
 $('#burger').onclick=()=>$('#side').classList.toggle('open');
 $('#alert').onclick=()=>go('Siswa');
 if(AD)enter(AD);
-async function enter(p){const r=await post({act:'a_list',admin:p,name:'Mapel'});
+async function enter(p){const r=await post({act:'a_multi',admin:p,names:['Kelas','Siswa','Mapel','Soal','Nilai']});
  if(!r.ok){sessionStorage.removeItem('adm');$('#gate').hidden=false;$('#gmsg').textContent=r.msg||'';return}
- AD=p;sessionStorage.setItem('adm',p);$('#gate').hidden=true;$('#app').hidden=false;
- const c=await post({act:'cfg'});if(c.ok){$('#bn').textContent=c.sekolah||'CBT';if(c.logo)$('#blogo').src=c.logo}
+ Object.keys(r.data).forEach(n=>{CA[n]=r.data[n];CT[n]=Date.now()});AD=p;sessionStorage.setItem('adm',p);$('#gate').hidden=true;$('#app').hidden=false;
+ post({act:'cfg'},1).then(c=>{if(c.ok){$('#bn').textContent=c.sekolah||'CBT';if(c.logo)$('#blogo').src=c.logo}});
  $('#nav').innerHTML=NAV.map(([k,i,l])=>`<button data-v="${k}"><span>${i}</span>${esc(l)}<em id="bd-${k}" hidden></em></button>`).join('');
- $$('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));go('dash');setInterval(poll,8000)}
-function go(v){V=v;clearInterval(ref);$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==v));$('#title').textContent=NAV.find(n=>n[0]==v)[2];$('#side').classList.remove('open');$('#view').innerHTML='<p class="muted">Memuat...</p>';({dash:vDash,kartu:vKartu,set:vSet}[v]||(()=>vTable(v)))()}
-async function poll(){const s=await L('Siswa');if(!s.length)return;SIS=s;const n=alarmN(s).length,b=$('#bd-Siswa');b.hidden=!n;b.textContent=n;$('#alert').hidden=!n;$('#alert').textContent='🔔 '+n+' siswa membunyikan alarm — klik untuk melihat';
+ $$('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));go('dash');setInterval(poll,10000)}
+function go(v,s){if(s){if(V!=v)return;if(['Siswa','Kelas','Mapel','Soal','Nilai'].includes(v)){if($('#tbl')){D=CA[v]||[];SIS=CA.Siswa||SIS;MP=CA.Mapel||MP;mc();draw()}}else if(v=='dash')vDash();return}
+ V=v;clearInterval(ref);$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==v));$('#title').textContent=NAV.find(n=>n[0]==v)[2];$('#side').classList.remove('open');if(!(NEED[v]||[]).every(n=>CA[n]))$('#view').innerHTML='<p class="muted">Memuat...</p>';({dash:vDash,kartu:vKartu,set:vSet}[v]||(()=>vTable(v)))();bg(NEED[v]||[])}
+async function poll(){if(document.hidden||!AD||!await ld(['Siswa'],1))return;const s=CA.Siswa;if(!s.length)return;SIS=s;const n=alarmN(s).length,b=$('#bd-Siswa');b.hidden=!n;b.textContent=n;$('#alert').hidden=!n;$('#alert').textContent='🔔 '+n+' siswa membunyikan alarm — klik untuk melihat';
  if(V=='dash')dashAlarm();else if(V=='Siswa'){D=s;draw()}}
 
 // ---------- Dashboard ----------
@@ -42,7 +51,7 @@ async function vDash(){const[s,m,q,n]=await Promise.all(['Siswa','Mapel','Soal',
  <div class="panel"><h3>🔔 Alarm Aktif</h3><div id="alp"></div></div>
  <div class="panel"><h3>Ringkasan Ujian</h3><div class="tw"><table><thead><tr><th>Kode</th><th>Nama</th><th>Untuk Kelas</th><th>Soal</th><th>Selesai</th><th>Status</th></tr></thead><tbody>${m.map(x=>`<tr><td>${esc(x.kode)}</td><td>${esc(x.nama)}</td><td>${kt(x.kelas)}</td><td>${c[x.kode]||0}</td><td>${d[x.kode]||0}</td><td><span class="tag ${x.status=='aktif'?'g':'r'}">${esc(x.status)}</span></td></tr>`).join('')||'<tr><td>Belum ada mapel</td></tr>'}</tbody></table></div></div>`;dashAlarm()}
 function dashAlarm(){const a=alarmN(SIS),e=$('#alp');if(!e)return;e.innerHTML=a.length?`<div class="tw"><table><tr><th>NIS</th><th>Nama</th><th>Kelas</th><th>Pelanggaran</th><th></th></tr>${a.map(x=>`<tr><td>${esc(x.nis)}</td><td>${esc(x.nama)}</td><td>${esc(x.kelas)}</td><td>${esc(x.pelanggaran)}</td><td><button class="btn sm red" data-n="${esc(x.nis)}">🔕 Matikan Alarm</button></td></tr>`).join('')}</table></div>`:'<p class="muted">Tidak ada alarm aktif.</p>';
- $$('#alp [data-n]').forEach(b=>b.onclick=async()=>{await adm('a_alarmoff',{nis:b.dataset.n});await poll()})}
+ $$('#alp [data-n]').forEach(b=>b.onclick=()=>{b.disabled=true;mut('Siswa','a_alarmoff',null,l=>l.map(x=>x.nis==b.dataset.n?{...x,alarm:0}:x),{nis:b.dataset.n})})}
 const kn=x=>{const n=norm(x);return n=='SEMUA'?'Semua kelas':/^(XII|XI|X)$/.test(n)?'Semua kelas '+n:x};
 const kt=k=>String(k||'SEMUA').split(',').map(x=>`<span class="tag">${esc(kn(x.trim()))}</span>`).join(' ');
 
@@ -50,7 +59,7 @@ const kt=k=>String(k||'SEMUA').split(',').map(x=>`<span class="tag">${esc(kn(x.t
 const bar=h=>`<div class="panel"><div class="tools">${h}</div><div id="tbl" class="tw"></div><div class="cnt" id="cnt"></div></div>`;
 const kopt=()=>'<option value="">Semua kelas</option>'+[...new Set(D.map(r=>r.kelas).filter(Boolean))].sort().map(k=>`<option>${esc(k)}</option>`).join('');
 async function vTable(t){T=t;D=await L(t);if(t=='Siswa')SIS=D;if(t=='Kelas')SIS=await L('Siswa');
- if(t=='Mapel'){MC={};(await L('Soal')).forEach(x=>MC[x.mapel]=(MC[x.mapel]||0)+(x.status=='nonaktif'?0:1))}
+ if(t=='Mapel'){await L('Soal');mc()}
  if(t=='Soal'||t=='Nilai')MP=await L('Mapel');
  const S='<input id="fq" placeholder="🔍 Cari..." class="grow">',A='<button class="btn" id="add">＋ Tambah</button>',C='<button class="btn ghost" id="tp">⬇ Template CSV</button><label class="btn ghost">⬆ Upload CSV<input type="file" id="up" accept=".csv,.txt" hidden></label>',
   mo=MP.map(m=>`<option value="${esc(m.kode)}">${esc(m.kode)} – ${esc(m.nama)}</option>`).join('');
@@ -62,12 +71,12 @@ async function vTable(t){T=t;D=await L(t);if(t=='Siswa')SIS=D;if(t=='Kelas')SIS=
  const on=(i,f)=>$('#'+i)&&($('#'+i).onclick=f);
  on('add',()=>{if(t=='Soal'&&!$('#um').value)return alert('Buat Mapel / Ujian terlebih dahulu');form()});
  on('tp',()=>dlcsv(`template_${t}.csv`,[TPL[t],...EX[t]]));if($('#up'))$('#up').onchange=imp;
- on('aoff',async()=>{await adm('a_alarmoff',{nis:'all'});load()});on('sync',async()=>{const have=new Set(D.map(x=>norm(x.nama))),nw=[...new Set(SIS.map(s=>String(s.kelas||'').trim()).filter(k=>k&&!have.has(norm(k))))];if(!nw.length)return alert('Semua kelas dari data siswa sudah ada.');for(const k of nw)await adm('a_save',{name:'Kelas',obj:{nama:k}});load()});on('bon',()=>bulk('aktif'));on('boff',()=>bulk('nonaktif'));
+ on('aoff',()=>mut('Siswa','a_alarmoff',null,l=>l.map(x=>({...x,alarm:0})),{nis:'all'}));on('sync',async()=>{const have=new Set(D.map(x=>norm(x.nama))),nw=[...new Set(SIS.map(s=>String(s.kelas||'').trim()).filter(k=>k&&!have.has(norm(k))))];if(!nw.length)return alert('Semua kelas dari data siswa sudah ada.');for(const k of nw)await mut('Kelas','a_save',{nama:k},l=>l.concat({nama:k}))});on('bon',()=>bulk('aktif'));on('boff',()=>bulk('nonaktif'));
  on('ek',()=>{const m=MP.find(x=>x.kode==$('#um').value);m?form(m,'Mapel'):alert('Belum ada mapel')});
  on('dl',()=>dlcsv('nilai.csv',[H.Nilai,...D.map(r=>H.Nilai.map(k=>r[k]))]));
  draw()}
-async function load(){D=await L(T);if(T=='Siswa')SIS=D;draw()}
-async function bulk(s){if(confirm((s=='aktif'?'Aktifkan':'Nonaktifkan')+' semua ujian?')){await adm('a_bulk',{status:s});load()}}
+async function load(){await ld([T],1);D=CA[T]||[];if(T=='Siswa')SIS=D;draw()}
+function bulk(s){if(confirm((s=='aktif'?'Aktifkan':'Nonaktifkan')+' semua ujian?'))mut('Mapel','a_bulk',null,l=>l.map(x=>({...x,status:s})),{status:s})}
 function cell(k,r,j){const v=r[k];
  if(k=='_no')return j+1;if(k=='_siswa')return SIS.filter(s=>norm(s.kelas)==norm(r.nama)).length;if(k=='_soal')return MC[r.kode]||0;
  if(k=='status')return `<span class="tag ${v=='blokir'||v=='nonaktif'?'r':'g'}">${esc(v||'aktif')}</span>`;
@@ -85,14 +94,13 @@ function draw(){const c=COLS[T],q=($('#fq')?.value||'').toLowerCase(),fk=$('#fk'
  $('#tbl').innerHTML=`<table><thead><tr>${c.map(k=>`<th>${LB[k]||k}</th>`).join('')}${T=='Nilai'?'<th></th>':'<th>Aksi</th>'}</tr></thead><tbody>${rs.map((r,j)=>`<tr>${c.map(k=>`<td class="${k=='soal'?'q':''}">${cell(k,r,j)}</td>`).join('')}<td>${acts(r)}</td></tr>`).join('')||`<tr><td colspan="${c.length+1}" class="muted">Belum ada data</td></tr>`}</tbody></table>`;
  let n=rs.length+' data';if(T=='Soal'){const m=MP.find(x=>x.kode==um);n+=m?` · Ujian: ${m.nama} · Untuk kelas: ${String(m.kelas||'SEMUA').split(',').map(kn).join(', ')}`:' · Belum ada mapel'}$('#cnt').textContent=n;
  $$('#tbl [data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a,D[b.dataset.i]))}
-async function act(a,r){const k=K[T];
+async function act(a,r){const k=K[T],ns=r.status=='nonaktif'||r.status=='blokir'?'aktif':(T=='Siswa'?'blokir':'nonaktif');
  if(a=='edit')return form(r);
- if(a=='del'&&confirm('Hapus data ini?'))await adm('a_del',{name:T,obj:r});
- if(a=='reset'&&confirm('Reset nilai agar siswa bisa mengulang ujian ini?'))await adm('a_del',{name:'Nilai',obj:r});
- if(a=='tog')await adm('a_save',{name:T,obj:{[k]:r[k],status:r.status=='nonaktif'?'aktif':'nonaktif'}});
- if(a=='blk')await adm('a_save',{name:'Siswa',obj:{nis:r.nis,status:r.status=='blokir'?'aktif':'blokir'}});
- if(a=='off')await adm('a_alarmoff',{nis:r.nis});
- load()}
+ if(a=='del'&&confirm('Hapus data ini?'))await mut(T,'a_del',r,l=>l.filter(x=>x[k]!=r[k]));
+ if(a=='reset'&&confirm('Reset nilai agar siswa bisa mengulang ujian ini?'))await mut('Nilai','a_del',r,l=>l.filter(x=>!(x.nis==r.nis&&x.mapel==r.mapel)));
+ if(a=='tog')await mut(T,'a_save',{[k]:r[k],status:ns},l=>l.map(x=>x[k]==r[k]?{...x,status:ns}:x));
+ if(a=='blk')await mut('Siswa','a_save',{nis:r.nis,status:ns},l=>l.map(x=>x.nis==r.nis?{...x,status:ns}:x));
+ if(a=='off')await mut('Siswa','a_alarmoff',null,l=>l.map(x=>x.nis==r.nis?{...x,alarm:0}:x),{nis:r.nis})}
 
 // ---------- Form tambah/edit ----------
 async function form(r,t=T){const o=r||{},fd=FD[t];let kp='';
@@ -114,8 +122,8 @@ async function form(r,t=T){const o=r||{},fd=FD[t];let kp='';
  f.onsubmit=async e=>{if(e.submitter.value!='ok')return;const ob={...o};new FormData(f).forEach((v,k)=>{if(k!='kel'&&k!='extra')ob[k]=v});
   if(t=='Mapel'){let ks=[...f.querySelectorAll('[name=kel]:checked')].map(x=>x.value);if(!ks.length||ks.includes('SEMUA'))ks=['SEMUA'];ob.kelas=ks.join(',')}
   if(t=='Soal')ob.mapel=o.mapel||$('#um').value;
-  delete ob._i;await adm('a_save',{name:t,obj:ob});
-  if(t=='Mapel'&&T=='Soal'){MP=await L('Mapel');draw()}else load()}}
+  delete ob._i;const key=K[t];if(t=='Soal'&&!ob.id)ob.id=Math.random().toString(36).slice(2,10);if(t=='Siswa'){ob.alarm=ob.alarm||0;ob.pelanggaran=ob.pelanggaran||0}
+  mut(t,'a_save',ob,l=>{const i=l.findIndex(x=>String(x[key])==String(ob[key]));if(i>=0)l[i]={...l[i],...ob};else l.push({...ob});return l})}}
 
 // ---------- Kartu login ----------
 async function vKartu(){SIS=await L('Siswa');D=SIS;
