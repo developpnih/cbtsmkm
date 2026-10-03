@@ -8,7 +8,7 @@ let U,Q=[],ans={},cur=0,end=0,tm,inExam=0,cfg={sekolah:'',logo:''};
 // ---------- Alarm ----------
 let AC,siren;
 const unlock=()=>{try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}};
-function alarmOn(){if(siren||!AC)return;const o=AC.createOscillator(),g=AC.createGain();o.type='square';g.gain.value=1;o.connect(g);g.connect(AC.destination);o.start();let t=0;siren={o,iv:setInterval(()=>{o.frequency.value=t++%2?1400:600},350)};$('#warn').hidden=false;navigator.vibrate&&navigator.vibrate([500,200,500])}
+function alarmOn(){if(siren||!AC)return;const o=AC.createOscillator(),g=AC.createGain();o.type='square';g.gain.value=1;o.connect(g);g.connect(AC.destination);o.start();let t=0;siren={t0:Date.now(),ack:0,o,iv:setInterval(()=>{o.frequency.value=t++%2?1400:600},350)};$('#warn').hidden=false;navigator.vibrate&&navigator.vibrate([500,200,500])}
 function alarmOff(){if(!siren)return;clearInterval(siren.iv);try{siren.o.stop()}catch(e){}siren=null;$('#warn').hidden=true}
 const goFull=()=>{const e=document.documentElement,f=e.requestFullscreen||e.webkitRequestFullscreen;try{const p=f&&f.call(e);p&&p.catch&&p.catch(()=>{})}catch(x){}};
 const isFull=()=>!!(document.fullscreenElement||document.webkitFullscreenElement),canFull=!!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen);
@@ -23,7 +23,7 @@ document.addEventListener('visibilitychange',()=>document.hidden&&leave());
 addEventListener('blur',leave);
 ['contextmenu','copy','cut','paste'].forEach(e=>document.addEventListener(e,x=>inExam&&x.preventDefault()));
 (function pl(){setTimeout(async()=>{if(U&&inExam){const r=await post({act:'poll',nis:U.nis},1);if(r.ok){if(r.blokir){inExam=0;alarmOff();alert('Akses Anda diblokir oleh pengawas.');location.reload()}
- if(r.alarm)alarmOn();else alarmOff()}}pl()},siren?4000:15000)})();
+ if(r.alarm){alarmOn();if(siren)siren.ack=1}else if(siren&&siren.ack)alarmOff();else if(siren&&Date.now()-siren.t0>12000){siren.t0=Date.now();post({act:'alarm',again:1,nis:U.nis,pw:U.pw},1)}}}pl()},siren?4000:15000)})();
 
 // ---------- Siswa ----------
 let LB=0;const doLogin=async()=>{if(LB)return;const nis=$('#nis').value.trim(),pw=$('#pw').value.trim();if(!nis||!pw)return $('#lmsg').textContent='Isi NIS dan password';LB=1;unlock();goFull();const b=$('#fl button');b.disabled=true;b.textContent='Memeriksa...';$('#lmsg').textContent='';

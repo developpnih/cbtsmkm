@@ -28,3 +28,5 @@ PENGAWAS RUANG: halaman pengawas.html (+ pengawas.js, pengawas.css)
 1. Admin > Ruang & Pengawas: tambah ruang (Nama Ruang = username, contoh R1) + password
 2. Admin > Data Siswa: isi kolom ruang tiap siswa (CSV kolom "ruang"), atau cari/filter lalu klik "Atur Ruang (yang tampil)"
 3. Pengawas buka alamat-anda/pengawas.html, login dengan username ruang. Pengawas HANYA bisa mematikan alarm siswa di ruangnya.
+
+UPDATE ALARM: ganti Code.gs (Deploy > New version), upload ulang script.js dan admin.js.

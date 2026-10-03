@@ -25,9 +25,11 @@ async function mut(n,act,o,fn,ex={}){const bak=CA[n];if(fn)CA[n]=fn((bak||[]).ma
  const r=await adm(act,{name:n,obj:o,...ex});if(!r.ok){CA[n]=bak;ui();alert(r.msg||'Gagal menyimpan, coba lagi')}else setTimeout(()=>{CT[n]=0;bg([n])},2500);return r}
 const norm=s=>String(s??'').toUpperCase().replace(/[\s\-_]+/g,' ').trim();
 const alarmN=s=>s.filter(x=>String(x.alarm)=='1');
+let PA=-1,AC;const unlockA=()=>{try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}};document.addEventListener('click',unlockA,{once:true});
+const beep=()=>{if(!AC)return;try{const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.frequency.value=880;g.gain.value=.25;o.start();setTimeout(()=>o.stop(),500)}catch(e){}};
 
 // ---------- Login & navigasi ----------
-let GB=0;const gl=async()=>{if(GB)return;GB=1;const b=$('#gf button');b.disabled=true;b.textContent='Memeriksa...';$('#gmsg').textContent='';await enter($('#gp').value);GB=0;b.disabled=false;b.textContent='Masuk'};
+let GB=0;const gl=async()=>{if(GB)return;GB=1;unlockA();const b=$('#gf button');b.disabled=true;b.textContent='Memeriksa...';$('#gmsg').textContent='';await enter($('#gp').value);GB=0;b.disabled=false;b.textContent='Masuk'};
 $('#gf').onsubmit=e=>{e.preventDefault();gl()};$('#gp').onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();gl()}};
 $('#out').onclick=()=>{sessionStorage.removeItem('adm');location.reload()};
 $('#burger').onclick=()=>$('#side').classList.toggle('open');
@@ -38,10 +40,10 @@ async function enter(p){const r=await post({act:'a_multi',admin:p,names:['Kelas'
  Object.keys(r.data).forEach(n=>{CA[n]=r.data[n];CT[n]=Date.now()});(CA.Mapel||[]).forEach(x=>{if(x.kelas===undefined)x.kelas=x.jenjang});AD=p;sessionStorage.setItem('adm',p);$('#gate').hidden=true;$('#app').hidden=false;
  post({act:'cfg'},1).then(c=>{if(c.ok){$('#bn').textContent=c.sekolah||'CBT';if(c.logo)$('#blogo').src=c.logo}});
  $('#nav').innerHTML=NAV.map(([k,i,l])=>`<button data-v="${k}"><span>${i}</span>${esc(l)}<em id="bd-${k}" hidden></em></button>`).join('');
- $$('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));go('dash');setInterval(poll,10000)}
+ $$('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));go('dash');setInterval(poll,5000);document.addEventListener('visibilitychange',()=>!document.hidden&&poll())}
 function go(v,s){if(s){if(V!=v)return;if(['Siswa','Kelas','Mapel','Soal','Nilai'].includes(v)){if($('#tbl')){D=CA[v]||[];SIS=CA.Siswa||SIS;MP=CA.Mapel||MP;mc();draw()}}else if(v=='dash')vDash();return}
  V=v;clearInterval(ref);$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==v));$('#title').textContent=NAV.find(n=>n[0]==v)[2];$('#side').classList.remove('open');if(!(NEED[v]||[]).every(n=>CA[n]))$('#view').innerHTML='<p class="muted">Memuat...</p>';({dash:vDash,kartu:vKartu,set:vSet}[v]||(()=>vTable(v)))();bg(NEED[v]||[])}
-async function poll(){if(document.hidden||!AD||!await ld(['Siswa'],1))return;const s=CA.Siswa;if(!s.length)return;SIS=s;const n=alarmN(s).length,b=$('#bd-Siswa');b.hidden=!n;b.textContent=n;$('#alert').hidden=!n;$('#alert').textContent='🔔 '+n+' siswa membunyikan alarm — klik untuk melihat';
+async function poll(){if(document.hidden||!AD||!await ld(['Siswa'],1))return;const s=CA.Siswa;if(!s.length)return;SIS=s;const n=alarmN(s).length,b=$('#bd-Siswa');if(n>PA&&PA>=0)beep();PA=n;document.title=(n?'('+n+') 🔔 ':'')+'Admin CBT';b.hidden=!n;b.textContent=n;$('#alert').hidden=!n;$('#alert').textContent='🔔 '+n+' siswa membunyikan alarm — klik untuk melihat';
  if(V=='dash')dashAlarm();else if(V=='Siswa'){D=s;draw()}}
 
 // ---------- Dashboard ----------
@@ -131,7 +133,7 @@ async function form(r,t=T){const o=r||{},fd=FD[t];let kp='';
  f.onsubmit=async e=>{if(e.submitter.value!='ok')return;const ob={...o};new FormData(f).forEach((v,k)=>{if(k!='kel'&&k!='extra')ob[k]=v});if(t=='Mapel')ob.jadwal=ob.jadwal?isoOff(ob.jadwal):'';
   if(t=='Mapel'){let ks=[...f.querySelectorAll('[name=kel]:checked')].map(x=>x.value);if(!ks.length||ks.includes('SEMUA'))ks=['SEMUA'];ob.kelas=ks.join(',')}
   if(t=='Soal')ob.mapel=o.mapel||$('#um').value;
-  delete ob._i;const key=K[t];if(t=='Soal'&&!ob.id)ob.id=Math.random().toString(36).slice(2,10);if(t=='Siswa'){ob.alarm=ob.alarm||0;ob.pelanggaran=ob.pelanggaran||0}
+  delete ob._i;const key=K[t];if(t=='Soal'&&!ob.id)ob.id=Math.random().toString(36).slice(2,10);if(t=='Siswa'){if(r){delete ob.alarm;delete ob.pelanggaran}else{ob.alarm=0;ob.pelanggaran=0}}
   mut(t,'a_save',ob,l=>{const i=l.findIndex(x=>String(x[key])==String(ob[key]));if(i>=0)l[i]={...l[i],...ob};else l.push({...ob});return l})}}
 
 // ---------- Kartu login ----------
