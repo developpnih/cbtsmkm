@@ -63,6 +63,10 @@ const kt=k=>String(k||'SEMUA').split(',').map(x=>`<span class="tag">${esc(kn(x.t
 
 // ---------- Tabel Siswa / Mapel / Soal / Nilai ----------
 const bar=h=>`<div class="panel"><div class="tools">${h}</div><div id="tbl" class="tw"></div><div class="cnt" id="cnt"></div></div>`;
+const jj=k=>((norm(k).match(/^(XII|XI|X)(?![A-Z])/)||[])[1])||'',IJ=/^(XII|XI|X)$/;
+const matchK=(m,f)=>{const t=String(m.kelas||'SEMUA').split(',').map(norm),nf=norm(f),jf=IJ.test(nf)?nf:jj(nf);return t.some(x=>x=='SEMUA'||x==nf||x==jf||(IJ.test(nf)&&jj(x)==nf))};
+const mkopt=()=>{const ks=[...new Set([...(CA.Kelas||[]).map(x=>x.nama),...(CA.Siswa||[]).map(x=>x.kelas)].map(x=>String(x||'').trim()).filter(Boolean))].sort();return '<option value="">Semua kelas</option>'+['X','XI','XII'].map(x=>`<option value="${x}">Kelas ${x} (semua)</option>`).join('')+ks.map(k=>`<option>${esc(k)}</option>`).join('')};
+const vis=()=>{const q=($('#fq')?.value||'').toLowerCase(),fk=$('#fk')?.value,um=$('#um')?.value,fm=$('#fm')?.value;return D.filter(r=>(!q||JSON.stringify(Object.values(r)).toLowerCase().includes(q))&&(!fk||(T=='Mapel'?matchK(r,fk):String(r.kelas)==fk))&&(T!='Soal'||r.mapel==um)&&(T!='Nilai'||!fm||r.mapel==fm))};
 const kopt=()=>'<option value="">Semua kelas</option>'+[...new Set(D.map(r=>r.kelas).filter(Boolean))].sort().map(k=>`<option>${esc(k)}</option>`).join('');
 async function vTable(t){T=t;D=await L(t);if(t=='Siswa')SIS=D;if(t=='Kelas'||t=='Ruang')SIS=await L('Siswa');
  if(t=='Mapel'){await L('Soal');mc()}
@@ -70,7 +74,7 @@ async function vTable(t){T=t;D=await L(t);if(t=='Siswa')SIS=D;if(t=='Kelas'||t==
  const S='<input id="fq" placeholder="🔍 Cari..." class="grow">',A='<button class="btn" id="add">＋ Tambah</button>',C='<button class="btn ghost" id="tp">⬇ Template CSV</button><label class="btn ghost">⬆ Upload CSV<input type="file" id="up" accept=".csv,.txt" hidden></label>',
   mo=MP.map(m=>`<option value="${esc(m.kode)}">${esc(m.kode)} – ${esc(m.nama)}</option>`).join('');
  $('#view').innerHTML=bar({Ruang:`${A}${C}${S}`,Kelas:`${A}${C}<button class="btn ghost" id="sync">⟳ Ambil dari Data Siswa</button>${S}`,Siswa:`${A}${C}<button class="btn ghost" id="setrg">🚪 Atur Ruang (yang tampil)</button><button class="btn red" id="aoff">🔕 Matikan Semua Alarm</button><select id="fk">${kopt()}</select>${S}`,
-  Mapel:`${A}${C}<button class="btn ghost" id="bon">✔ Aktifkan Semua</button><button class="btn ghost" id="boff">✖ Nonaktifkan Semua</button>${S}`,
+  Mapel:`${A}${C}<select id="fk">${mkopt()}</select><button class="btn ghost" id="bon">✔ Aktifkan yang tampil</button><button class="btn ghost" id="boff">✖ Nonaktifkan yang tampil</button>${S}`,
   Soal:`<select id="um">${mo}</select>${A.replace('Tambah','Tambah Manual')}<button class="btn ghost" id="ek">🎯 Atur Kelas Tujuan</button><a class="btn ghost" href="template_soal.docx" download>⬇ Template Word</a><label class="btn">⬆ Upload Word (.docx)<input type="file" id="up" accept=".docx" hidden></label>${S}`,
   Nilai:`<select id="fm"><option value="">Semua ujian</option>${mo}</select><select id="fk">${kopt()}</select><button class="btn ghost" id="dl">⬇ Unduh CSV</button>${S}`}[t]);
  ['fq','fk','um','fm'].forEach(i=>$('#'+i)&&($('#'+i).oninput=draw));
@@ -83,7 +87,7 @@ async function vTable(t){T=t;D=await L(t);if(t=='Siswa')SIS=D;if(t=='Kelas'||t==
  on('dl',()=>dlcsv('nilai.csv',[H.Nilai,...D.map(r=>H.Nilai.map(k=>r[k]))]));
  draw()}
 async function load(){await ld([T],1);D=CA[T]||[];if(T=='Siswa')SIS=D;draw()}
-function bulk(s){if(confirm((s=='aktif'?'Aktifkan':'Nonaktifkan')+' semua ujian?'))mut('Mapel','a_bulk',null,l=>l.map(x=>({...x,status:s})),{status:s})}
+function bulk(s){const rs=vis();if(!rs.length)return alert('Tidak ada ujian yang tampil');if(confirm((s=='aktif'?'Aktifkan ':'Nonaktifkan ')+rs.length+' ujian yang sedang tampil?')){const set=new Set(rs.map(x=>String(x.kode)));mut('Mapel','a_bulk',null,l=>l.map(x=>set.has(String(x.kode))?{...x,status:s}:x),{status:s,list:[...set]})}}
 function cell(k,r,j){const v=r[k];
  if(k=='_no')return j+1;if(k=='_siswa')return SIS.filter(s=>T=='Ruang'?String(s.ruang||'').toUpperCase().replace(/[^A-Z0-9]/g,'')==String(r.ruang||'').toUpperCase().replace(/[^A-Z0-9]/g,''):norm(s.kelas)==norm(r.nama)).length;if(k=='_soal')return MC[r.kode]||0;
  if(k=='status')return `<span class="tag ${v=='blokir'||v=='nonaktif'?'r':'g'}">${esc(v||'aktif')}</span>`;
@@ -98,7 +102,7 @@ const acts=r=>{const b=[],i=r._i,x=(a,l,c)=>`<button class="btn sm ${c}" data-a=
  if(T!='Kelas')b.push(x('edit','Edit','ghost'));b.push(x('del','Hapus','red'));return b.join(' ')};
 function draw(){const c=COLS[T],q=($('#fq')?.value||'').toLowerCase(),fk=$('#fk')?.value,um=$('#um')?.value,fm=$('#fm')?.value;if(!$('#tbl'))return;
  D.forEach((r,i)=>r._i=i);
- const rs=D.filter(r=>(!q||JSON.stringify(Object.values(r)).toLowerCase().includes(q))&&(!fk||String(r.kelas)==fk)&&(T!='Soal'||r.mapel==um)&&(T!='Nilai'||!fm||r.mapel==fm));
+ const rs=vis();
  $('#tbl').innerHTML=`<table><thead><tr>${c.map(k=>`<th>${LB[k]||k}</th>`).join('')}${T=='Nilai'?'<th></th>':'<th>Aksi</th>'}</tr></thead><tbody>${rs.map((r,j)=>`<tr>${c.map(k=>`<td class="${k=='soal'?'q':''}">${cell(k,r,j)}</td>`).join('')}<td>${acts(r)}</td></tr>`).join('')||`<tr><td colspan="${c.length+1}" class="muted">Belum ada data</td></tr>`}</tbody></table>`;
  let n=rs.length+' data';if(T=='Soal'){const m=MP.find(x=>x.kode==um);n+=m?` · Ujian: ${m.nama} · Untuk kelas: ${String(m.kelas||'SEMUA').split(',').map(kn).join(', ')}`:' · Belum ada mapel'}$('#cnt').textContent=n;
  $$('#tbl [data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a,D[b.dataset.i]))}
