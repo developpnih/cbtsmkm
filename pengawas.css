@@ -1,0 +1,6 @@
+.pw{max-width:760px}.row .grow{flex:1;min-width:160px;margin:0}
+.pill{background:#0003;padding:4px 12px;border-radius:99px;font-weight:700;font-size:.9rem}.pill.al{background:var(--er);animation:bl .6s infinite alternate}
+.srow{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--b);border-radius:12px;background:var(--c);margin-bottom:8px}
+.srow .nm{flex:1;min-width:0}.srow .nm b{display:block;overflow:hidden;text-overflow:ellipsis}.srow small{color:var(--m)}
+.srow.al{border:2px solid var(--er);background:#dc262614}
+.srow .btn{white-space:nowrap}

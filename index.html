@@ -18,6 +18,7 @@
       <label>Password<input id="pw" type="password" required></label>
       <button class="btn">Masuk Ujian</button>
       <p id="lmsg" class="err"></p>
+      <p class="muted" style="font-size:.8rem">Layar otomatis menjadi penuh setelah masuk. Jangan keluar dari layar penuh, pindah tab/aplikasi, atau membagi layar. Alarm akan berbunyi dan dilaporkan ke pengawas.</p>
     </form>
   </div>
 </section>
@@ -34,6 +35,7 @@
   <header class="bar"><b id="enama"></b><span id="timer">00:00</span></header>
   <div class="wrap exwrap">
     <div class="card">
+      <div class="note" id="enote" hidden></div>
       <div class="muted" id="qno"></div>
       <div id="qtext" class="qtext"></div>
       <div id="opts"></div>
@@ -44,6 +46,7 @@
 </section>
 </main>
 
+<div id="fs" hidden><div><h1>🖥️ Layar penuh diperlukan</h1><p>Ujian hanya dapat dikerjakan dalam mode layar penuh.</p><button class="btn" id="fsb" type="button">Kembali ke Layar Penuh</button></div></div>
 <div id="warn" hidden><div>⚠️<h1>PERINGATAN!</h1><p>Anda meninggalkan halaman ujian.<br>Hubungi pengawas untuk mematikan alarm.</p></div></div>
 <script src="config.js"></script>
 <script src="script.js"></script>

@@ -45,3 +45,5 @@ dialog{border:0;border-radius:16px;max-width:520px;width:calc(100% - 24px);backg
 .qimg{display:block;max-width:100%;max-height:340px;margin:8px 0;border-radius:8px;-webkit-user-drag:none;pointer-events:none}.opt .qimg{max-height:180px}
 body.busy::before{content:'';position:fixed;top:0;left:0;height:3px;width:100%;background:var(--p);z-index:999;animation:ld 1s ease-in-out infinite}@keyframes ld{from{transform:scaleX(0);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}
 .btn:disabled{opacity:.55;cursor:wait}
+#fs{position:fixed;inset:0;z-index:90;background:#0f172a;color:#fff;display:grid;place-items:center;text-align:center;padding:24px}#fs h1{font-size:1.5rem}#fs .btn{margin-top:12px}
+.note{background:#fef3c7;color:#92400e;padding:8px 12px;border-radius:8px;margin-bottom:10px;font-size:.9rem}

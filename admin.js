@@ -1,20 +1,21 @@
 // ====== HALAMAN ADMIN (butuh config.js & JSZip) ======
 // ====== PANEL ADMIN CBT ======
 const H={Nilai:['nis','nama','kelas','mapel','benar','salah','nilai','waktu']};
-const TPL={Kelas:['nama'],Siswa:['nis','nama','kelas','password'],Mapel:['kode','nama','durasi','kelas']};
-const EX={Kelas:[['X TSM 1'],['X TSM 2'],['X PSPT']],Siswa:[['1001','Budi Santoso','X TSM 1','abc123']],Mapel:[['MTK-X','Matematika','90','X'],['PKK-TSM','Produktif TSM','90','X TSM 1;X TSM 2']]};
-const K={Kelas:'nama',Siswa:'nis',Mapel:'kode',Soal:'id'},TL={Kelas:'Kelas',Siswa:'Siswa',Mapel:'Mapel / Ujian',Soal:'Soal'};
-const COLS={Kelas:['nama','_siswa'],Siswa:['nis','nama','kelas','password','status','pelanggaran','alarm'],Mapel:['kode','nama','durasi','kelas','_soal','status'],Soal:['_no','soal','kunci','status'],Nilai:['nis','nama','kelas','mapel','benar','salah','nilai','waktu']};
-const LB={_siswa:'Jml Siswa',nis:'NIS',nama:'Nama',kelas:'Kelas',password:'Password',status:'Status',pelanggaran:'Pelanggaran',alarm:'Alarm',kode:'Kode',durasi:'Durasi (mnt)',_soal:'Jml Soal',_no:'No',soal:'Soal',kunci:'Kunci',mapel:'Mapel',benar:'Benar',salah:'Salah',nilai:'Nilai',waktu:'Waktu'};
+const TPL={Kelas:['nama'],Siswa:['nis','nama','kelas','password','ruang'],Ruang:['ruang','password'],Mapel:['kode','nama','durasi','kelas']};
+const EX={Kelas:[['X TSM 1'],['X TSM 2'],['X PSPT']],Siswa:[['1001','Budi Santoso','X TSM 1','abc123','R1']],Ruang:[['R1','pengawas1'],['R2','pengawas2']],Mapel:[['MTK-X','Matematika','90','X'],['PKK-TSM','Produktif TSM','90','X TSM 1;X TSM 2']]};
+const K={Ruang:'ruang',Kelas:'nama',Siswa:'nis',Mapel:'kode',Soal:'id'},TL={Ruang:'Ruang',Kelas:'Kelas',Siswa:'Siswa',Mapel:'Mapel / Ujian',Soal:'Soal'};
+const COLS={Ruang:['ruang','password','_siswa'],Kelas:['nama','_siswa'],Siswa:['nis','nama','kelas','ruang','password','status','pelanggaran','alarm'],Mapel:['kode','nama','durasi','jadwal','kelas','_soal','status'],Soal:['_no','soal','kunci','status'],Nilai:['nis','nama','kelas','mapel','benar','salah','nilai','waktu']};
+const LB={ruang:'Ruang',_siswa:'Jml Siswa',nis:'NIS',nama:'Nama',kelas:'Kelas',password:'Password',status:'Status',pelanggaran:'Pelanggaran',alarm:'Alarm',kode:'Kode',jadwal:'Jadwal Mulai',durasi:'Durasi (mnt)',_soal:'Jml Soal',_no:'No',soal:'Soal',kunci:'Kunci',mapel:'Mapel',benar:'Benar',salah:'Salah',nilai:'Nilai',waktu:'Waktu'};
 const FD={
+ Ruang:[['ruang','Nama Ruang = Username pengawas (contoh: R1)'],['password','Password pengawas ruang']],
  Kelas:[['nama','Nama Kelas (contoh: X TSM 1)']],
- Siswa:[['nis','NIS / Username'],['nama','Nama Lengkap'],['kelas','Kelas (pilih / ketik)','kls'],['password','Password'],['status','Status','sel:aktif,blokir']],
- Mapel:[['kode','Kode (contoh: MTK-X)'],['nama','Nama Mapel / Ujian'],['durasi','Durasi (menit)','num'],['kelas','','kelas'],['status','Status','sel:aktif,nonaktif']],
+ Siswa:[['nis','NIS / Username'],['nama','Nama Lengkap'],['kelas','Kelas (pilih / ketik)','kls'],['ruang','Ruang ujian (pilih / ketik)','rg'],['password','Password'],['status','Status','sel:aktif,blokir']],
+ Mapel:[['kode','Kode (contoh: MTK-X)'],['nama','Nama Mapel / Ujian'],['durasi','Durasi (menit)','num'],['jadwal','Jadwal mulai (kosongkan = bebas kapan saja). Siswa yang terlambat otomatis dikurangi durasinya','dt'],['kelas','','kelas'],['status','Status','sel:aktif,nonaktif']],
  Soal:[['soal','Soal','img'],['a','Opsi A','img'],['b','Opsi B','img'],['c','Opsi C','img'],['d','Opsi D','img'],['e','Opsi E (kosongkan jika hanya 4 opsi)','imgopt'],['kunci','Kunci Jawaban','sel:A,B,C,D,E'],['status','Status','sel:aktif,nonaktif']]};
-const NAV=[['dash','📊','Dashboard'],['Kelas','🏫','Data Kelas'],['Siswa','👥','Data Siswa'],['Mapel','📚','Mapel & Ujian'],['Soal','📝','Bank Soal'],['Nilai','🏆','Nilai'],['kartu','🪪','Kartu Login'],['set','⚙️','Pengaturan']];
+const NAV=[['dash','📊','Dashboard'],['Kelas','🏫','Data Kelas'],['Siswa','👥','Data Siswa'],['Ruang','🚪','Ruang & Pengawas'],['Mapel','📚','Mapel & Ujian'],['Soal','📝','Bank Soal'],['Nilai','🏆','Nilai'],['kartu','🪪','Kartu Login'],['set','⚙️','Pengaturan']];
 let AD=sessionStorage.getItem('adm')||'',T='',V='',D=[],SIS=[],MP=[],MC={},KL=[],ref;
 const adm=(act,o)=>post({act,admin:AD,...o});
-const CA={},CT={},NEED={dash:['Siswa','Mapel','Soal','Nilai'],Kelas:['Kelas','Siswa'],Siswa:['Siswa'],Mapel:['Mapel','Soal'],Soal:['Soal','Mapel'],Nilai:['Nilai','Mapel'],kartu:['Siswa'],set:[]};
+const CA={},CT={},NEED={dash:['Siswa','Mapel','Soal','Nilai'],Kelas:['Kelas','Siswa'],Ruang:['Ruang','Siswa'],Siswa:['Siswa','Ruang'],Mapel:['Mapel','Soal'],Soal:['Soal','Mapel'],Nilai:['Nilai','Mapel'],kartu:['Siswa'],set:[]};
 async function ld(ns,q){const r=await post({act:'a_multi',admin:AD,names:ns},q);if(!r.ok)return false;ns.forEach(n=>{CA[n]=r.data[n]||[];CT[n]=Date.now();if(n=='Mapel')CA[n].forEach(x=>{if(x.kelas===undefined)x.kelas=x.jenjang})});return true}
 const L=async n=>{if(!CA[n])await ld([n]);return CA[n]||[]};
 async function bg(ns){ns=ns.filter(n=>Date.now()-(CT[n]||0)>8000);if(!ns.length)return;const o=JSON.stringify(ns.map(n=>CA[n]));if(await ld(ns,1)&&JSON.stringify(ns.map(n=>CA[n]))!=o&&!$('#dlg').open)go(V,1)}
@@ -32,7 +33,7 @@ $('#out').onclick=()=>{sessionStorage.removeItem('adm');location.reload()};
 $('#burger').onclick=()=>$('#side').classList.toggle('open');
 $('#alert').onclick=()=>go('Siswa');
 if(AD)enter(AD);
-async function enter(p){const r=await post({act:'a_multi',admin:p,names:['Kelas','Siswa','Mapel','Soal','Nilai']});
+async function enter(p){const r=await post({act:'a_multi',admin:p,names:['Kelas','Ruang','Siswa','Mapel','Soal','Nilai']});
  if(!r.ok){sessionStorage.removeItem('adm');$('#gate').hidden=false;$('#gmsg').textContent=r.msg||'';return}
  Object.keys(r.data).forEach(n=>{CA[n]=r.data[n];CT[n]=Date.now()});(CA.Mapel||[]).forEach(x=>{if(x.kelas===undefined)x.kelas=x.jenjang});AD=p;sessionStorage.setItem('adm',p);$('#gate').hidden=true;$('#app').hidden=false;
  post({act:'cfg'},1).then(c=>{if(c.ok){$('#bn').textContent=c.sekolah||'CBT';if(c.logo)$('#blogo').src=c.logo}});
@@ -52,18 +53,21 @@ async function vDash(){const[s,m,q,n]=await Promise.all(['Siswa','Mapel','Soal',
  <div class="panel"><h3>Ringkasan Ujian</h3><div class="tw"><table><thead><tr><th>Kode</th><th>Nama</th><th>Untuk Kelas</th><th>Soal</th><th>Selesai</th><th>Status</th></tr></thead><tbody>${m.map(x=>`<tr><td>${esc(x.kode)}</td><td>${esc(x.nama)}</td><td>${kt(x.kelas)}</td><td>${c[x.kode]||0}</td><td>${d[x.kode]||0}</td><td><span class="tag ${x.status=='aktif'?'g':'r'}">${esc(x.status)}</span></td></tr>`).join('')||'<tr><td>Belum ada mapel</td></tr>'}</tbody></table></div></div>`;dashAlarm()}
 function dashAlarm(){const a=alarmN(SIS),e=$('#alp');if(!e)return;e.innerHTML=a.length?`<div class="tw"><table><tr><th>NIS</th><th>Nama</th><th>Kelas</th><th>Pelanggaran</th><th></th></tr>${a.map(x=>`<tr><td>${esc(x.nis)}</td><td>${esc(x.nama)}</td><td>${esc(x.kelas)}</td><td>${esc(x.pelanggaran)}</td><td><button class="btn sm red" data-n="${esc(x.nis)}">🔕 Matikan Alarm</button></td></tr>`).join('')}</table></div>`:'<p class="muted">Tidak ada alarm aktif.</p>';
  $$('#alp [data-n]').forEach(b=>b.onclick=()=>{b.disabled=true;mut('Siswa','a_alarmoff',null,l=>l.map(x=>x.nis==b.dataset.n?{...x,alarm:0}:x),{nis:b.dataset.n})})}
+const isoOff=v=>{const d=new Date(v),o=-d.getTimezoneOffset(),a=Math.abs(o),p=n=>String(n).padStart(2,'0');return v+':00'+(o<0?'-':'+')+p(Math.floor(a/60))+':'+p(a%60)},
+ toLocal=i=>{const d=i?new Date(i):null;return d&&!isNaN(d)?new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,16):''},
+ fmtJ=i=>{const d=new Date(i);return isNaN(d)?esc(i):d.toLocaleString('id-ID',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).replace('.',':')};
 const kn=x=>{const n=norm(x);return n=='SEMUA'?'Semua kelas':/^(XII|XI|X)$/.test(n)?'Semua kelas '+n:x};
 const kt=k=>String(k||'SEMUA').split(',').map(x=>`<span class="tag">${esc(kn(x.trim()))}</span>`).join(' ');
 
 // ---------- Tabel Siswa / Mapel / Soal / Nilai ----------
 const bar=h=>`<div class="panel"><div class="tools">${h}</div><div id="tbl" class="tw"></div><div class="cnt" id="cnt"></div></div>`;
 const kopt=()=>'<option value="">Semua kelas</option>'+[...new Set(D.map(r=>r.kelas).filter(Boolean))].sort().map(k=>`<option>${esc(k)}</option>`).join('');
-async function vTable(t){T=t;D=await L(t);if(t=='Siswa')SIS=D;if(t=='Kelas')SIS=await L('Siswa');
+async function vTable(t){T=t;D=await L(t);if(t=='Siswa')SIS=D;if(t=='Kelas'||t=='Ruang')SIS=await L('Siswa');
  if(t=='Mapel'){await L('Soal');mc()}
  if(t=='Soal'||t=='Nilai')MP=await L('Mapel');
  const S='<input id="fq" placeholder="🔍 Cari..." class="grow">',A='<button class="btn" id="add">＋ Tambah</button>',C='<button class="btn ghost" id="tp">⬇ Template CSV</button><label class="btn ghost">⬆ Upload CSV<input type="file" id="up" accept=".csv,.txt" hidden></label>',
   mo=MP.map(m=>`<option value="${esc(m.kode)}">${esc(m.kode)} – ${esc(m.nama)}</option>`).join('');
- $('#view').innerHTML=bar({Kelas:`${A}${C}<button class="btn ghost" id="sync">⟳ Ambil dari Data Siswa</button>${S}`,Siswa:`${A}${C}<button class="btn red" id="aoff">🔕 Matikan Semua Alarm</button><select id="fk">${kopt()}</select>${S}`,
+ $('#view').innerHTML=bar({Ruang:`${A}${C}${S}`,Kelas:`${A}${C}<button class="btn ghost" id="sync">⟳ Ambil dari Data Siswa</button>${S}`,Siswa:`${A}${C}<button class="btn ghost" id="setrg">🚪 Atur Ruang (yang tampil)</button><button class="btn red" id="aoff">🔕 Matikan Semua Alarm</button><select id="fk">${kopt()}</select>${S}`,
   Mapel:`${A}${C}<button class="btn ghost" id="bon">✔ Aktifkan Semua</button><button class="btn ghost" id="boff">✖ Nonaktifkan Semua</button>${S}`,
   Soal:`<select id="um">${mo}</select>${A.replace('Tambah','Tambah Manual')}<button class="btn ghost" id="ek">🎯 Atur Kelas Tujuan</button><a class="btn ghost" href="template_soal.docx" download>⬇ Template Word</a><label class="btn">⬆ Upload Word (.docx)<input type="file" id="up" accept=".docx" hidden></label>${S}`,
   Nilai:`<select id="fm"><option value="">Semua ujian</option>${mo}</select><select id="fk">${kopt()}</select><button class="btn ghost" id="dl">⬇ Unduh CSV</button>${S}`}[t]);
@@ -71,6 +75,7 @@ async function vTable(t){T=t;D=await L(t);if(t=='Siswa')SIS=D;if(t=='Kelas')SIS=
  const on=(i,f)=>$('#'+i)&&($('#'+i).onclick=f);
  on('add',()=>{if(t=='Soal'&&!$('#um').value)return alert('Buat Mapel / Ujian terlebih dahulu');form()});
  on('tp',()=>dlcsv(`template_${t}.csv`,[TPL[t],...EX[t]]));if($('#up'))$('#up').onchange=imp;
+ on('setrg',()=>{const q=($('#fq')?.value||'').toLowerCase(),fk=$('#fk')?.value,rs=D.filter(r=>(!q||JSON.stringify(Object.values(r)).toLowerCase().includes(q))&&(!fk||String(r.kelas)==fk));if(!rs.length)return alert('Tidak ada siswa yang tampil');const rg=prompt('Nama ruang untuk '+rs.length+' siswa yang sedang tampil (contoh: R1). Kosongkan untuk menghapus ruang.','');if(rg===null)return;const set=new Set(rs.map(x=>String(x.nis))),v=rg.trim();mut('Siswa','a_setruang',null,l=>l.map(x=>set.has(String(x.nis))?{...x,ruang:v}:x),{list:[...set],ruang:v})});
  on('aoff',()=>mut('Siswa','a_alarmoff',null,l=>l.map(x=>({...x,alarm:0})),{nis:'all'}));on('sync',async()=>{const have=new Set(D.map(x=>norm(x.nama))),nw=[...new Set(SIS.map(s=>String(s.kelas||'').trim()).filter(k=>k&&!have.has(norm(k))))];if(!nw.length)return alert('Semua kelas dari data siswa sudah ada.');for(const k of nw)await mut('Kelas','a_save',{nama:k},l=>l.concat({nama:k}))});on('bon',()=>bulk('aktif'));on('boff',()=>bulk('nonaktif'));
  on('ek',()=>{const m=MP.find(x=>x.kode==$('#um').value);m?form(m,'Mapel'):alert('Belum ada mapel')});
  on('dl',()=>dlcsv('nilai.csv',[H.Nilai,...D.map(r=>H.Nilai.map(k=>r[k]))]));
@@ -78,15 +83,16 @@ async function vTable(t){T=t;D=await L(t);if(t=='Siswa')SIS=D;if(t=='Kelas')SIS=
 async function load(){await ld([T],1);D=CA[T]||[];if(T=='Siswa')SIS=D;draw()}
 function bulk(s){if(confirm((s=='aktif'?'Aktifkan':'Nonaktifkan')+' semua ujian?'))mut('Mapel','a_bulk',null,l=>l.map(x=>({...x,status:s})),{status:s})}
 function cell(k,r,j){const v=r[k];
- if(k=='_no')return j+1;if(k=='_siswa')return SIS.filter(s=>norm(s.kelas)==norm(r.nama)).length;if(k=='_soal')return MC[r.kode]||0;
+ if(k=='_no')return j+1;if(k=='_siswa')return SIS.filter(s=>T=='Ruang'?String(s.ruang||'').toUpperCase().replace(/[^A-Z0-9]/g,'')==String(r.ruang||'').toUpperCase().replace(/[^A-Z0-9]/g,''):norm(s.kelas)==norm(r.nama)).length;if(k=='_soal')return MC[r.kode]||0;
  if(k=='status')return `<span class="tag ${v=='blokir'||v=='nonaktif'?'r':'g'}">${esc(v||'aktif')}</span>`;
  if(k=='alarm')return String(v)=='1'?'<span class="tag r">ALARM</span>':'–';
  if(k=='kelas'&&T=='Mapel')return kt(v);
+ if(k=='jadwal')return v?esc(fmtJ(v)):'<span class="muted">Bebas</span>';
  if(k=='soal')return esc(v).replace(IM,'🖼');return esc(v)}
 const acts=r=>{const b=[],i=r._i,x=(a,l,c)=>`<button class="btn sm ${c}" data-a="${a}" data-i="${i}">${l}</button>`;
  if(T=='Nilai')return x('reset','Reset','red');
  if(T=='Siswa'){b.push(x('blk',r.status=='blokir'?'Buka Akses':'Blokir','ghost'));if(String(r.alarm)=='1')b.push(x('off','🔕 Matikan','red'))}
- else if(T!='Kelas')b.push(x('tog',r.status=='nonaktif'?'Aktifkan':'Nonaktifkan',r.status=='nonaktif'?'':'ghost'));
+ else if(T!='Kelas'&&T!='Ruang')b.push(x('tog',r.status=='nonaktif'?'Aktifkan':'Nonaktifkan',r.status=='nonaktif'?'':'ghost'));
  if(T!='Kelas')b.push(x('edit','Edit','ghost'));b.push(x('del','Hapus','red'));return b.join(' ')};
 function draw(){const c=COLS[T],q=($('#fq')?.value||'').toLowerCase(),fk=$('#fk')?.value,um=$('#um')?.value,fm=$('#fm')?.value;if(!$('#tbl'))return;
  D.forEach((r,i)=>r._i=i);
@@ -104,12 +110,15 @@ async function act(a,r){const k=K[T],ns=r.status=='nonaktif'||r.status=='blokir'
 
 // ---------- Form tambah/edit ----------
 async function form(r,t=T){const o=r||{},fd=FD[t];let kp='';
+ if(t=='Siswa')await L('Ruang');
  if(t=='Mapel'||t=='Siswa'){KL=[...new Set([...(await L('Kelas')).map(x=>x.nama),...(SIS.length?SIS:(SIS=await L('Siswa'))).map(s=>s.kelas)].map(x=>String(x||'').trim()).filter(Boolean))].sort()}
  if(t=='Mapel'){const cur=String(o.kelas||'SEMUA').split(',').map(norm).filter(Boolean),extra=cur.filter(c=>!['SEMUA','X','XI','XII'].includes(c)&&!KL.some(k=>norm(k)==c)),
    chk=(v,l)=>`<label class="chk"><input type="checkbox" name="kel" value="${esc(v)}" ${cur.includes(norm(v))?'checked':''}>${esc(l||v)}</label>`;
   kp=`<div class="kp"><b>Ujian / soal ini untuk kelas:</b><div class="kg"><small>Semua</small>${chk('SEMUA','Semua kelas')}</div><div class="kg"><small>Semua kelas per jenjang</small>${['X','XI','XII'].map(x=>chk(x,'Semua kelas '+x)).join('')}</div><div class="kg"><small>Per kelas (tambah kelas lewat menu Data Kelas)</small>${KL.concat(extra).map(k=>chk(k)).join('')||'<i class="muted">Belum ada kelas. Tambahkan di menu Data Kelas.</i>'}</div></div>`}
  const fld=([k,l,ty=''])=>{const v=o[k]??'';
+  if(ty=='dt')return `<label>${l}<input type="datetime-local" name="${k}" value="${toLocal(v)}"></label>`;
   if(ty=='kelas')return kp;
+  if(ty=='rg')return `<label>${l}<input name="${k}" value="${esc(v)}" list="rl" autocomplete="off"></label><datalist id="rl">${(CA.Ruang||[]).map(x=>`<option value="${esc(x.ruang)}">`).join('')}</datalist>`;
   if(ty=='kls')return `<label>${l}<input name="${k}" value="${esc(v)}" list="kl" autocomplete="off" required></label><datalist id="kl">${KL.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`;
   if(ty.startsWith('sel:')){const op=ty.slice(4).split(',');return `<label>${l}<select name="${k}">${op.map(x=>`<option ${(v||op[0])==x?'selected':''}>${x}</option>`).join('')}</select></label>`}
   if(ty.startsWith('img'))return `<label>${l}<textarea name="${k}" rows="${k=='soal'?4:2}" ${ty=='img'?'required':''}>${esc(v)}</textarea></label><label class="btn sm ghost imgb">🖼 Sisipkan gambar<input type="file" accept="image/*" data-f="${k}" hidden></label>`;
@@ -119,7 +128,7 @@ async function form(r,t=T){const o=r||{},fd=FD[t];let kp='';
  f.addEventListener('change',e=>{if(e.target.name!='kel'||!e.target.checked)return;[...f.querySelectorAll('[name=kel]')].forEach(x=>{if(x!==e.target&&(e.target.value=='SEMUA'||x.value=='SEMUA'))x.checked=false})});
  $$('#df [data-f]').forEach(i=>i.onchange=async()=>{const fl=i.files[0];if(!fl)return;prog('Mengunggah gambar...');const u=await up(fl);prog('');if(!u)return alert('Gagal mengunggah gambar');const el=f.elements[i.dataset.f];el.value=(el.value+' [img:'+u+']').trim()});
  $('#dlg').showModal();
- f.onsubmit=async e=>{if(e.submitter.value!='ok')return;const ob={...o};new FormData(f).forEach((v,k)=>{if(k!='kel'&&k!='extra')ob[k]=v});
+ f.onsubmit=async e=>{if(e.submitter.value!='ok')return;const ob={...o};new FormData(f).forEach((v,k)=>{if(k!='kel'&&k!='extra')ob[k]=v});if(t=='Mapel')ob.jadwal=ob.jadwal?isoOff(ob.jadwal):'';
   if(t=='Mapel'){let ks=[...f.querySelectorAll('[name=kel]:checked')].map(x=>x.value);if(!ks.length||ks.includes('SEMUA'))ks=['SEMUA'];ob.kelas=ks.join(',')}
   if(t=='Soal')ob.mapel=o.mapel||$('#um').value;
   delete ob._i;const key=K[t];if(t=='Soal'&&!ob.id)ob.id=Math.random().toString(36).slice(2,10);if(t=='Siswa'){ob.alarm=ob.alarm||0;ob.pelanggaran=ob.pelanggaran||0}
@@ -129,7 +138,7 @@ async function form(r,t=T){const o=r||{},fd=FD[t];let kp='';
 async function vKartu(){SIS=await L('Siswa');D=SIS;
  $('#view').innerHTML=`<div class="panel noprint"><div class="tools"><select id="fk">${kopt()}</select><button class="btn" id="pr">🖨 Cetak Kartu</button><span class="muted">Pilih kelas lalu cetak.</span></div></div><div id="cards"></div>`;
  const base=location.href.split('#')[0].split('?')[0].replace(/[^\/]*$/,''),sn=$('#bn').textContent,lg=$('#blogo').src;
- const rd=()=>{const f=$('#fk').value;$('#cards').innerHTML=SIS.filter(s=>!f||s.kelas==f).map(s=>`<div class="kt"><img src="${esc(lg)}" alt=""><b>KARTU LOGIN UJIAN</b><p>${esc(sn)}</p><hr style="clear:both"><p>Nama: <b>${esc(s.nama)}</b></p><p>Kelas: ${esc(s.kelas)}</p><p>Username: <b>${esc(s.nis)}</b></p><p>Password: <b>${esc(s.password)}</b></p><p style="font-size:.7rem;word-break:break-all">${esc(base)}</p></div>`).join('')};
+ const rd=()=>{const f=$('#fk').value;$('#cards').innerHTML=SIS.filter(s=>!f||s.kelas==f).map(s=>`<div class="kt"><img src="${esc(lg)}" alt=""><b>KARTU LOGIN UJIAN</b><p>${esc(sn)}</p><hr style="clear:both"><p>Nama: <b>${esc(s.nama)}</b></p><p>Kelas: ${esc(s.kelas)}</p>${s.ruang?`<p>Ruang: <b>${esc(s.ruang)}</b></p>`:''}<p>Username: <b>${esc(s.nis)}</b></p><p>Password: <b>${esc(s.password)}</b></p><p style="font-size:.7rem;word-break:break-all">${esc(base)}</p></div>`).join('')};
  $('#fk').onchange=rd;$('#pr').onclick=()=>print();rd()}
 
 // ---------- Pengaturan ----------

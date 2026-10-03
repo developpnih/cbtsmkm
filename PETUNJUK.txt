@@ -20,3 +20,11 @@ Update Code.gs: Deploy > Manage deployments > Edit > New version
 
 UPDATE PERFORMA: ganti Code.gs di Apps Script > jalankan "setup" sekali > Deploy > Manage deployments > Edit > New version.
 Upload ulang config.js (jangan lupa isi URL Web App), style.css, script.js, admin.js ke hosting.
+
+JADWAL UJIAN: di Mapel & Ujian isi "Jadwal mulai". Siswa terlambat otomatis dikurangi durasinya
+(waktu selesai = jadwal mulai + durasi). Kosongkan jadwal jika ujian bebas kapan saja.
+
+PENGAWAS RUANG: halaman pengawas.html (+ pengawas.js, pengawas.css)
+1. Admin > Ruang & Pengawas: tambah ruang (Nama Ruang = username, contoh R1) + password
+2. Admin > Data Siswa: isi kolom ruang tiap siswa (CSV kolom "ruang"), atau cari/filter lalu klik "Atur Ruang (yang tampil)"
+3. Pengawas buka alamat-anda/pengawas.html, login dengan username ruang. Pengawas HANYA bisa mematikan alarm siswa di ruangnya.
