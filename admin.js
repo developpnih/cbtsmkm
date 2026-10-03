@@ -15,7 +15,7 @@ const NAV=[['dash','📊','Dashboard'],['Kelas','🏫','Data Kelas'],['Siswa','�
 let AD=sessionStorage.getItem('adm')||'',T='',V='',D=[],SIS=[],MP=[],MC={},KL=[],ref;
 const adm=(act,o)=>post({act,admin:AD,...o});
 const CA={},CT={},NEED={dash:['Siswa','Mapel','Soal','Nilai'],Kelas:['Kelas','Siswa'],Siswa:['Siswa'],Mapel:['Mapel','Soal'],Soal:['Soal','Mapel'],Nilai:['Nilai','Mapel'],kartu:['Siswa'],set:[]};
-async function ld(ns,q){const r=await post({act:'a_multi',admin:AD,names:ns},q);if(!r.ok)return false;ns.forEach(n=>{CA[n]=r.data[n]||[];CT[n]=Date.now()});return true}
+async function ld(ns,q){const r=await post({act:'a_multi',admin:AD,names:ns},q);if(!r.ok)return false;ns.forEach(n=>{CA[n]=r.data[n]||[];CT[n]=Date.now();if(n=='Mapel')CA[n].forEach(x=>{if(x.kelas===undefined)x.kelas=x.jenjang})});return true}
 const L=async n=>{if(!CA[n])await ld([n]);return CA[n]||[]};
 async function bg(ns){ns=ns.filter(n=>Date.now()-(CT[n]||0)>8000);if(!ns.length)return;const o=JSON.stringify(ns.map(n=>CA[n]));if(await ld(ns,1)&&JSON.stringify(ns.map(n=>CA[n]))!=o&&!$('#dlg').open)go(V,1)}
 function mc(){MC={};(CA.Soal||[]).forEach(x=>MC[x.mapel]=(MC[x.mapel]||0)+(x.status=='nonaktif'?0:1))}
@@ -34,7 +34,7 @@ $('#alert').onclick=()=>go('Siswa');
 if(AD)enter(AD);
 async function enter(p){const r=await post({act:'a_multi',admin:p,names:['Kelas','Siswa','Mapel','Soal','Nilai']});
  if(!r.ok){sessionStorage.removeItem('adm');$('#gate').hidden=false;$('#gmsg').textContent=r.msg||'';return}
- Object.keys(r.data).forEach(n=>{CA[n]=r.data[n];CT[n]=Date.now()});AD=p;sessionStorage.setItem('adm',p);$('#gate').hidden=true;$('#app').hidden=false;
+ Object.keys(r.data).forEach(n=>{CA[n]=r.data[n];CT[n]=Date.now()});(CA.Mapel||[]).forEach(x=>{if(x.kelas===undefined)x.kelas=x.jenjang});AD=p;sessionStorage.setItem('adm',p);$('#gate').hidden=true;$('#app').hidden=false;
  post({act:'cfg'},1).then(c=>{if(c.ok){$('#bn').textContent=c.sekolah||'CBT';if(c.logo)$('#blogo').src=c.logo}});
  $('#nav').innerHTML=NAV.map(([k,i,l])=>`<button data-v="${k}"><span>${i}</span>${esc(l)}<em id="bd-${k}" hidden></em></button>`).join('');
  $$('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));go('dash');setInterval(poll,10000)}
