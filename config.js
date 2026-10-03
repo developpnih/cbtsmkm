@@ -1,5 +1,5 @@
 // ====== KONFIGURASI: ganti URL Web App Google Apps Script Anda di bawah ======
-const API='GANTI_DENGAN_URL_WEB_APP';
+const API='https://script.google.com/macros/s/AKfycbwTjJp0DP_3O78fT_Gu-DTe9O_PgB3i9tK19G5L5UYDqhe095rtp5CVkBQKM2UUFtc1/exec';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const IM=/\[img:(https:\/\/[^\]\s]+)\]/g,rich=s=>esc(s).replace(IM,'<img class="qimg" src="$1" alt="gambar" draggable="false">');
