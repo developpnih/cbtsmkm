@@ -1,5 +1,5 @@
 // ====== KONFIGURASI: ganti URL Web App Google Apps Script Anda di bawah ======
-const API='https://script.google.com/macros/s/AKfycbwZMjWw38MMN_ezFY33Nf8jzb__8k7hyGtMfLAVDXAodJKdUHYBdt86P2NozksEcXBt/exec';
+const API='https://script.google.com/macros/s/AKfycbzJGjuVEFRQJ5w_GPAOlBcISHiDmlxB63TRhy65gbjRkAEOjuQdiwpr6FLjwG6YeCdt/exec';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const IM=/\[img:((?:https:\/\/|data:image\/(?:jpeg|png);base64,)[^\]\s]+)\]/g,rich=s=>esc(s).replace(IM,'<img class="qimg" src="$1" alt="gambar" draggable="false">');
