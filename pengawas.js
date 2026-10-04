@@ -2,7 +2,7 @@
 let U=JSON.parse(sessionStorage.getItem('pgw')||'null'),S=[],prev=-1,AC,TM;
 const unlock=()=>{try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}};
 const beep=()=>{if(!AC)return;try{const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.frequency.value=880;g.gain.value=.25;o.start();setTimeout(()=>o.stop(),500);navigator.vibrate&&navigator.vibrate(300)}catch(e){}};
-post({act:'cfg'},1).then(c=>{if(c.ok){$('#sn').textContent='Pengawas Ruang · '+(c.sekolah||'');if(c.logo)$('.logo').src=c.logo}});
+post({act:'cfg'},1).then(c=>{if(c.ok){$('#sn').textContent='Pengawas Ruang · '+(c.sekolah||'')}});post({act:'logo'},1).then(l=>{if(l.ok&&l.logo)$('.logo').src=l.logo});
 let LB=0;
 async function login(){if(LB)return;const u=$('#u').value.trim(),p=$('#p').value.trim();if(!u||!p)return;LB=1;unlock();const b=$('#lf button');b.disabled=true;b.textContent='Memeriksa...';$('#lm').textContent='';
  const r=await post({act:'p_list',ruang:u,pw:p});LB=0;b.disabled=false;b.textContent='Masuk';

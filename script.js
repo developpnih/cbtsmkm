@@ -3,7 +3,8 @@ const show=id=>$$('main>section').forEach(s=>s.hidden=s.id!=id);
 let U,Q=[],ans={},cur=0,end=0,tm,inExam=0,cfg={sekolah:'',logo:''};
 
 // ---------- Init ----------
-(async()=>{const c=await post({act:'cfg'});if(c.ok){cfg=c;$('#sname').textContent=c.sekolah;document.title='CBT '+c.sekolah;if(c.logo)$$('.logo').forEach(i=>i.src=c.logo)}})();
+(async()=>{const c=await post({act:'cfg'});if(c.ok){cfg=c;$('#sname').textContent=c.sekolah;document.title='CBT '+c.sekolah;}})();
+{const lc=localStorage.getItem('cbt_logo');if(lc)$$('.logo').forEach(i=>i.src=lc);post({act:'logo'},1).then(l=>{if(!l.ok)return;if(l.logo){try{localStorage.setItem('cbt_logo',l.logo)}catch(e){}$$('.logo').forEach(i=>i.src=l.logo)}else localStorage.removeItem('cbt_logo')})}
 
 // ---------- Alarm ----------
 let AC,siren;

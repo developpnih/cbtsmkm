@@ -46,3 +46,7 @@ UPDATE (Daftar Hadir tabel, Pengaturan Alarm): upload ULANG SEMUA file frontend 
  index.html, style.css, script.js, admin.html, admin.css, admin.js, pengawas.html, pengawas.css, pengawas.js, dokumen.js, dokumen.css
  (config.js jangan ditimpa). Lalu ganti Code.gs -> Deploy > Manage deployments > Edit > New version.
 Menu admin "Pengaturan Alarm": ON/OFF alarm pelanggaran (hanya admin). Jika OFF, pelanggaran tetap dicatat tanpa bunyi.
+
+UPDATE DAFTAR HADIR: kolom Kelas & Nilai sebelum Tanda Tangan, Proktor/Pengawas -> Pengawas 1/Pengawas 2, logo kini UPLOAD (Admin > Pengaturan).
+Upload ulang: admin.js, admin.css, dokumen.js, dokumen.css, script.js, pengawas.js. Ganti Code.gs lalu Deploy > New version.
+Logo lama berupa link perlu diupload ulang sebagai gambar.
