@@ -94,12 +94,12 @@ function cell(k,r,j){const v=r[k];
  if(k=='alarm')return String(v)=='1'?'<span class="tag r">ALARM</span>':'–';
  if(k=='kelas'&&T=='Mapel')return kt(v);
  if(k=='jadwal')return v?esc(fmtJ(v)):'<span class="muted">Bebas</span>';
- if(k=='soal')return esc(v).replace(IM,'🖼');return esc(v)}
+ if(k=='soal')return esc(v).replace(/\[img:[^\]]*\]/g,'🖼');return esc(v)}
 const acts=r=>{const b=[],i=r._i,x=(a,l,c)=>`<button class="btn sm ${c}" data-a="${a}" data-i="${i}">${l}</button>`;
  if(T=='Nilai')return x('reset','Reset','red');
  if(T=='Siswa'){b.push(x('blk',r.status=='blokir'?'Buka Akses':'Blokir','ghost'));if(String(r.alarm)=='1')b.push(x('off','🔕 Matikan','red'))}
  else if(T!='Kelas'&&T!='Ruang')b.push(x('tog',r.status=='nonaktif'?'Aktifkan':'Nonaktifkan',r.status=='nonaktif'?'':'ghost'));
- if(T!='Kelas')b.push(x('edit','Edit','ghost'));b.push(x('del','Hapus','red'));return b.join(' ')};
+ if(T=='Soal')b.push(x('prev','👁 Lihat','ghost'));if(T!='Kelas')b.push(x('edit','Edit','ghost'));b.push(x('del','Hapus','red'));return b.join(' ')};
 function draw(){const c=COLS[T],q=($('#fq')?.value||'').toLowerCase(),fk=$('#fk')?.value,um=$('#um')?.value,fm=$('#fm')?.value;if(!$('#tbl'))return;
  D.forEach((r,i)=>r._i=i);
  const rs=vis();
@@ -108,6 +108,7 @@ function draw(){const c=COLS[T],q=($('#fq')?.value||'').toLowerCase(),fk=$('#fk'
  $$('#tbl [data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a,D[b.dataset.i]))}
 async function act(a,r){const k=K[T],ns=r.status=='nonaktif'||r.status=='blokir'?'aktif':(T=='Siswa'?'blokir':'nonaktif');
  if(a=='edit')return form(r);
+ if(a=='prev')return preview(r);
  if(a=='del'&&confirm('Hapus data ini?'))await mut(T,'a_del',r,l=>l.filter(x=>x[k]!=r[k]));
  if(a=='reset'&&confirm('Reset nilai agar siswa bisa mengulang ujian ini?'))await mut('Nilai','a_del',r,l=>l.filter(x=>!(x.nis==r.nis&&x.mapel==r.mapel)));
  if(a=='tog')await mut(T,'a_save',{[k]:r[k],status:ns},l=>l.map(x=>x[k]==r[k]?{...x,status:ns}:x));
@@ -153,9 +154,13 @@ async function vSet(){const c=await post({act:'cfg'});
  $('#fset').onsubmit=async e=>{e.preventDefault();const o=Object.fromEntries(new FormData(e.target)),r=await adm('a_cfg',{obj:o});if(!r.ok)return alert(r.msg);if(o.admin){AD=o.admin;sessionStorage.setItem('adm',AD)}$('#bn').textContent=o.sekolah||'CBT';if(o.logo)$('#blogo').src=o.logo;alert('Tersimpan')}}
 
 // ---------- CSV, Word & impor ----------
-let IMGN=0,IMGF=0;
+let IMGN=0,IMGF=0,UPERR='';
 const prog=t=>{let e=$('#prog');if(!e){e=document.createElement('div');e.id='prog';e.style.cssText='position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#000c;color:#fff;padding:10px 16px;border-radius:99px;z-index:50';document.body.append(e)}e.textContent=t;e.hidden=!t};
-async function up(blob){try{const bm=await createImageBitmap(blob),k=Math.min(1,900/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(bm,0,0,c.width,c.height);const r=await adm('a_img',{data:c.toDataURL('image/jpeg',.82).split(',')[1]});return r.ok?r.url:''}catch(e){return''}}
+async function up(blob){try{const bm=await createImageBitmap(blob);let k=Math.min(1,760/Math.max(bm.width,bm.height)),q=.85,d='';
+ for(let i=0;i<10;i++){const c=document.createElement('canvas');c.width=Math.max(1,Math.round(bm.width*k));c.height=Math.max(1,Math.round(bm.height*k));const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(bm,0,0,c.width,c.height);d=c.toDataURL('image/jpeg',q).split(',')[1];if(d.length<=44000)break;if(q>.5)q-=.1;else k*=.8}
+ if(d.length>44000){UPERR='gambar terlalu besar';return''}const r=await adm('a_img',{data:d});if(!r.ok)UPERR=r.msg||'server menolak';return r.ok?r.url:''}catch(e){UPERR='format gambar tidak didukung (mis. EMF/WMF)';return''}}
+async function preview(r){prog('Memuat pratinjau...');const p=await adm('a_preview',{id:r.id});prog('');if(!p.ok)return alert(p.msg||'Gagal memuat pratinjau');
+ $('#dlg').innerHTML=`<form method="dialog"><h3>Pratinjau Soal</h3><div class="qp">${rich(p.soal)}</div>${p.opsi.map(o=>`<div class="qo ${o.k==p.kunci?'ok':''}"><b>${o.k}</b><span>${rich(o.t)}</span>${o.k==p.kunci?'<em>✔ kunci</em>':''}</div>`).join('')}<div class="end"><button class="btn">Tutup</button></div></form>`;$('#dlg').showModal()}
 function dlcsv(name,rows){const t='\uFEFF'+rows.map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download=name;a.click()}
 function csv(t){t=t.replace(/^\uFEFF/,'');const d=t.split('\n')[0].includes(';')&&!t.split('\n')[0].includes(',')?';':',',R=[];let r=[],c='',q=0;
  for(let i=0;i<t.length;i++){const x=t[i];if(q){if(x=='"'){if(t[i+1]=='"'){c+='"';i++}else q=0}else c+=x}else if(x=='"')q=1;else if(x==d){r.push(c);c=''}else if(x=='\n'||x=='\r'){if(x=='\r'&&t[i+1]=='\n')i++;r.push(c);c='';R.push(r);r=[]}else c+=x}
@@ -174,12 +179,12 @@ async function docx(f){const z=await JSZip.loadAsync(await f.arrayBuffer()),X=as
   if(b&&!['0','false','off'].includes(av(b,'val')))return true;if(h&&av(h,'val')!='none')return true;
   if(co){const c=(av(co,'val')||'').toLowerCase();if(/^[0-9a-f]{6}$/.test(c)){const [R,G,B]=[0,2,4].map(i=>parseInt(c.substr(i,2),16));if(!(R<90&&G<90&&B<90)&&!(R>230&&G>230&&B>230))return true}}return false};
  const Qs=[];let q=null;
- for(const p of [...g(d,'body')[0].children].filter(c=>c.localName=='p')){
+ for(const p of g(d,'p').filter(p=>{for(let n=p.parentNode;n;n=n.parentNode)if(n.localName=='Fallback')return false;return true})){
   const ch=[],push=(s,m)=>{for(const c of s)ch.push({c,m})};
   const np=g(p,'numPr')[0],nid=np&&av(g(np,'numId')[0],'val'),lv=np&&(av(g(np,'ilvl')[0],'val')||'0'),fmt=nid&&nid!='0'?(num[nid]||{})[lv]:null;
   for(const r of g(p,'r')){const m=mark(r),va=av(g(r,'vertAlign')[0],'val');
    for(const c of r.children){if(c.localName=='t'){let s=c.textContent;if(va=='superscript')s=[...s].map(x=>SUP[x]||x).join('');else if(va=='subscript')s=[...s].map(x=>SUB[x]||x).join('');push(s,m)}
-    else if(c.localName=='tab')push('\t',m);else if(c.localName=='br')push('\n',m);else if(c.localName!='rPr')await imgs(c,push)}}
+    else if(c.localName=='tab')push('\t',m);else if(c.localName=='br')push('\n',m);else if(c.localName!='rPr')await imgs(c,s=>push(s,m))}}
   const text=ch.map(x=>x.c).join(''),T=text.trim();if(!T)continue;
   const tq=/^\s*\d{1,3}[.)]\s+/.exec(text);
   if(tq||fmt=='decimal'){q={s:[text.slice(tq?tq[0].length:0).trim()],o:{},n:0};Qs.push(q);continue}
@@ -189,12 +194,12 @@ async function docx(f){const z=await JSZip.loadAsync(await f.arrayBuffer()),X=as
   if(un&&k>=4){q={s:[T],o:{},n:0};Qs.push(q);continue}
   const ord=Math.min(q.n++,4),sl=lead?lead[1].toUpperCase():LET[ord],from=lead?lead[0].length:0,mk=[],re=/(^|[^A-Za-z0-9])([A-Ea-e])[.)](?=\s|$|[(\d\-−√])/g;re.lastIndex=from;let m,pv=sl;
   while((m=re.exec(text))){const L=m[2].toUpperCase();if(L>pv){mk.push({L,at:m.index+m[1].length,end:m.index+m[0].length});pv=L}}
-  const pcs=[{L:sl,a:from,b:mk.length?mk[0].at:text.length},...mk.map((x,i)=>({L:x.L,a:x.end,b:i+1<mk.length?mk[i+1].at:text.length}))];
-  for(const pc of pcs){const seg=ch.slice(pc.a,pc.b),t=seg.map(x=>x.c).join('').replace(/\s+/g,' ').trim(),mm=seg.some(x=>x.m&&x.c.trim());if(!t)continue;const o=q.o[pc.L];q.o[pc.L]=o?{t:o.t+' '+t,m:o.m||mm}:{t,m:mm}}}
- return Qs.filter(q=>q.s.join('').trim()).map((q,i)=>{const ks=[...LET].filter(L=>q.o[L]&&q.o[L].m),n=Object.keys(q.o).length;return [String(i+1),q.s.join('\n'),...[...LET].map(L=>q.o[L]?q.o[L].t:''),ks.length==1&&n>1?ks[0]:'']})}
+  const pcs=[{L:sl,la:0,a:from,b:mk.length?mk[0].at:text.length},...mk.map((x,i)=>({L:x.L,la:x.at,a:x.end,b:i+1<mk.length?mk[i+1].at:text.length}))];
+  for(const pc of pcs){const seg=ch.slice(pc.a,pc.b),t=seg.map(x=>x.c).join('').replace(/\s+/g,' ').trim(),mm=seg.some(x=>x.m&&x.c.trim()),lm=ch.slice(pc.la,pc.a).some(x=>x.m&&x.c.trim());if(!t)continue;const o=q.o[pc.L];q.o[pc.L]=o?{t:o.t+' '+t,m:o.m||mm,lm:o.lm||lm}:{t,m:mm,lm}}}
+ return Qs.filter(q=>q.s.join('').trim()).map((q,i)=>{let ks=[...LET].filter(L=>q.o[L]&&q.o[L].m);const n=Object.keys(q.o).length;if(!ks.length)ks=[...LET].filter(L=>q.o[L]&&q.o[L].lm);return [String(i+1),q.s.join('\n'),...[...LET].map(L=>q.o[L]?q.o[L].t:''),ks.length==1&&n>1?ks[0]:'']})}
 async function imp(e){const f=e.target.files[0];if(!f)return;let list;
- if(/\.docx$/i.test(f.name)){const m=$('#um')?.value;if(!m)return alert('Buat Mapel terlebih dahulu');let R;IMGN=IMGF=0;try{R=await docx(f);prog('')}catch(x){prog('');return alert('File tidak terbaca. Simpan sebagai .docx (bukan .doc) sesuai template.')}
-  if(IMGF)alert(IMGF+' gambar gagal diproses (format tidak didukung, mis. EMF/WMF). Gunakan gambar PNG/JPG.');
+ if(/\.docx$/i.test(f.name)){const m=$('#um')?.value;if(!m)return alert('Buat Mapel terlebih dahulu');let R;IMGN=IMGF=0;UPERR='';try{R=await docx(f);prog('')}catch(x){prog('');return alert('File tidak terbaca. Simpan sebagai .docx (bukan .doc) sesuai template.')}
+  if(IMGF)alert(IMGF+' gambar gagal diproses: '+(UPERR||'format tidak didukung')+'. Gunakan PNG/JPG.');
   list=R.filter(r=>!/^no/i.test(r[0])&&r[1]).map(r=>({mapel:m,soal:r[1],a:r[2],b:r[3],c:r[4],d:r[5],e:r[6],kunci:(r[7]||'').toUpperCase().trim()}));
   const bad=list.filter(x=>!/^[A-E]$/.test(x.kunci)).length;if(bad&&!confirm(bad+' soal kunci jawabannya tidak valid (harus A-E). Tetap impor?'))return}
  else{const R=csv(await f.text()),h=R.shift().map(x=>x.trim().toLowerCase());list=R.map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||'').trim()])))}

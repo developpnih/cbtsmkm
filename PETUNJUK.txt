@@ -30,3 +30,7 @@ PENGAWAS RUANG: halaman pengawas.html (+ pengawas.js, pengawas.css)
 3. Pengawas buka alamat-anda/pengawas.html, login dengan username ruang. Pengawas HANYA bisa mematikan alarm siswa di ruangnya.
 
 UPDATE ALARM: ganti Code.gs (Deploy > New version), upload ulang script.js dan admin.js.
+
+GAMBAR SOAL: gambar kini disimpan di sheet "Gambar" (tanpa Google Drive, tanpa izin tambahan, tanpa berbagi publik)
+dan dikirim langsung ke siswa saat ujian dimulai. Soal bergambar lama (yang tersimpan sebagai tautan Drive) perlu diupload ulang.
+Bank Soal > tombol "Lihat" untuk pratinjau soal beserta gambarnya.
