@@ -34,3 +34,10 @@ UPDATE ALARM: ganti Code.gs (Deploy > New version), upload ulang script.js dan a
 GAMBAR SOAL: gambar kini disimpan di sheet "Gambar" (tanpa Google Drive, tanpa izin tambahan, tanpa berbagi publik)
 dan dikirim langsung ke siswa saat ujian dimulai. Soal bergambar lama (yang tersimpan sebagai tautan Drive) perlu diupload ulang.
 Bank Soal > tombol "Lihat" untuk pratinjau soal beserta gambarnya.
+
+DAFTAR HADIR & BERITA ACARA (file baru: dokumen.js, dokumen.css)
+- Siswa login berhasil -> otomatis tercatat hadir untuk ujian yang aktif/sedang dibuka sesuai kelasnya.
+- Selesai ujian per mapel -> siswa diminta tanda tangan di layar. Jika belum, tombol "Tanda tangan" muncul di menu siswa.
+- Admin: menu Daftar Hadir dan Berita Acara (pilih ruang + mapel). Pengawas: tab Daftar Hadir dan Berita Acara di pengawas.html.
+- Isi kop surat, logo kanan, kota/kab, kode, dan judul di Admin > Pengaturan.
+- Cetak: tombol "Cetak" -> pilih Save as PDF atau printer (ukuran A4).

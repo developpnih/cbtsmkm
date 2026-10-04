@@ -12,10 +12,10 @@ const FD={
  Siswa:[['nis','NIS / Username'],['nama','Nama Lengkap'],['kelas','Kelas (pilih / ketik)','kls'],['ruang','Ruang ujian (pilih / ketik)','rg'],['password','Password'],['status','Status','sel:aktif,blokir']],
  Mapel:[['kode','Kode (contoh: MTK-X)'],['nama','Nama Mapel / Ujian'],['durasi','Durasi (menit)','num'],['jadwal','Jadwal mulai (kosongkan = bebas kapan saja). Siswa yang terlambat otomatis dikurangi durasinya','dt'],['kelas','','kelas'],['status','Status','sel:aktif,nonaktif']],
  Soal:[['soal','Soal','img'],['a','Opsi A','img'],['b','Opsi B','img'],['c','Opsi C','img'],['d','Opsi D','img'],['e','Opsi E (kosongkan jika hanya 4 opsi)','imgopt'],['kunci','Kunci Jawaban','sel:A,B,C,D,E'],['status','Status','sel:aktif,nonaktif']]};
-const NAV=[['dash','📊','Dashboard'],['Kelas','🏫','Data Kelas'],['Siswa','👥','Data Siswa'],['Ruang','🚪','Ruang & Pengawas'],['Mapel','📚','Mapel & Ujian'],['Soal','📝','Bank Soal'],['Nilai','🏆','Nilai'],['kartu','🪪','Kartu Login'],['set','⚙️','Pengaturan']];
+const NAV=[['dash','📊','Dashboard'],['Kelas','🏫','Data Kelas'],['Siswa','👥','Data Siswa'],['Ruang','🚪','Ruang & Pengawas'],['Mapel','📚','Mapel & Ujian'],['Soal','📝','Bank Soal'],['Nilai','🏆','Nilai'],['hadir','🧾','Daftar Hadir'],['ba','📄','Berita Acara'],['kartu','🪪','Kartu Login'],['set','⚙️','Pengaturan']];
 let AD=sessionStorage.getItem('adm')||'',T='',V='',D=[],SIS=[],MP=[],MC={},KL=[],ref;
 const adm=(act,o)=>post({act,admin:AD,...o});
-const CA={},CT={},NEED={dash:['Siswa','Mapel','Soal','Nilai'],Kelas:['Kelas','Siswa'],Ruang:['Ruang','Siswa'],Siswa:['Siswa','Ruang'],Mapel:['Mapel','Soal'],Soal:['Soal','Mapel'],Nilai:['Nilai','Mapel'],kartu:['Siswa'],set:[]};
+const CA={},CT={},NEED={dash:['Siswa','Mapel','Soal','Nilai'],Kelas:['Kelas','Siswa'],Ruang:['Ruang','Siswa'],Siswa:['Siswa','Ruang'],Mapel:['Mapel','Soal'],Soal:['Soal','Mapel'],Nilai:['Nilai','Mapel'],kartu:['Siswa'],hadir:['Ruang','Mapel'],ba:['Ruang','Mapel'],set:[]};
 async function ld(ns,q){const r=await post({act:'a_multi',admin:AD,names:ns},q);if(!r.ok)return false;ns.forEach(n=>{CA[n]=r.data[n]||[];CT[n]=Date.now();if(n=='Mapel')CA[n].forEach(x=>{if(x.kelas===undefined)x.kelas=x.jenjang})});return true}
 const L=async n=>{if(!CA[n])await ld([n]);return CA[n]||[]};
 async function bg(ns){ns=ns.filter(n=>Date.now()-(CT[n]||0)>8000);if(!ns.length)return;const o=JSON.stringify(ns.map(n=>CA[n]));if(await ld(ns,1)&&JSON.stringify(ns.map(n=>CA[n]))!=o&&!$('#dlg').open)go(V,1)}
@@ -42,7 +42,7 @@ async function enter(p){const r=await post({act:'a_multi',admin:p,names:['Kelas'
  $('#nav').innerHTML=NAV.map(([k,i,l])=>`<button data-v="${k}"><span>${i}</span>${esc(l)}<em id="bd-${k}" hidden></em></button>`).join('');
  $$('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));go('dash');setInterval(poll,5000);document.addEventListener('visibilitychange',()=>!document.hidden&&poll())}
 function go(v,s){if(s){if(V!=v)return;if(['Siswa','Kelas','Mapel','Soal','Nilai'].includes(v)){if($('#tbl')){D=CA[v]||[];SIS=CA.Siswa||SIS;MP=CA.Mapel||MP;mc();draw()}}else if(v=='dash')vDash();return}
- V=v;clearInterval(ref);$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==v));$('#title').textContent=NAV.find(n=>n[0]==v)[2];$('#side').classList.remove('open');if(!(NEED[v]||[]).every(n=>CA[n]))$('#view').innerHTML='<p class="muted">Memuat...</p>';({dash:vDash,kartu:vKartu,set:vSet}[v]||(()=>vTable(v)))();bg(NEED[v]||[])}
+ V=v;clearInterval(ref);$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==v));$('#title').textContent=NAV.find(n=>n[0]==v)[2];$('#side').classList.remove('open');if(!(NEED[v]||[]).every(n=>CA[n]))$('#view').innerHTML='<p class="muted">Memuat...</p>';({dash:vDash,kartu:vKartu,set:vSet,hadir:()=>vDoc('hadir'),ba:()=>vDoc('ba')}[v]||(()=>vTable(v)))();bg(NEED[v]||[])}
 async function poll(){if(document.hidden||!AD||!await ld(['Siswa'],1))return;const s=CA.Siswa;if(!s.length)return;SIS=s;const n=alarmN(s).length,b=$('#bd-Siswa');if(n>PA&&PA>=0)beep();PA=n;document.title=(n?'('+n+') 🔔 ':'')+'Admin CBT';b.hidden=!n;b.textContent=n;$('#alert').hidden=!n;$('#alert').textContent='🔔 '+n+' siswa membunyikan alarm — klik untuk melihat';
  if(V=='dash')dashAlarm();else if(V=='Siswa'){D=s;draw()}}
 
@@ -149,8 +149,12 @@ async function vKartu(){SIS=await L('Siswa');D=SIS;
  $('#fk').onchange=rd;$('#pr').onclick=()=>print();rd()}
 
 // ---------- Pengaturan ----------
+async function vDoc(mode){const rg=(await L('Ruang')).map(x=>x.ruang);await L('Mapel');
+ if(!rg.length){$('#view').innerHTML='<div class="panel"><p class="muted">Belum ada ruang. Tambahkan ruang di menu Ruang & Pengawas, lalu isi ruang tiap siswa di Data Siswa.</p></div>';return}
+ DOC.mount($('#view'),mode,{ruangs:rg,mapels:async()=>(CA.Mapel||[]).map(m=>({kode:m.kode,nama:m.nama,jd:Date.parse(m.jadwal)||0,durasi:+m.durasi||0})),get:(r,m,img)=>adm('a_doc',{ruang:r,mapel:m,img}),save:(r,m,t,o)=>adm('a_doc_save',{ruang:r,mapel:m,type:t,obj:o}),edit:(r,m,n,o)=>adm('a_hadir',{ruang:r,mapel:m,nis:n,...o})})}
+const FSET=[['sekolah','Nama Sekolah'],['logo','URL Logo kiri (link gambar langsung)'],['logo2','URL Logo kanan (opsional)'],['kop1','Kop baris atas (boleh 2 baris)','ta'],['kop2','Kop nama sekolah (kosongkan = nama sekolah)'],['kop3','Kop program studi'],['kop4','Alamat sekolah'],['kop5','Website'],['kop6','Email'],['kab','Kota/Kabupaten'],['kodeKab','Kode Kota/Kab'],['kodeSekolah','Kode Sekolah'],['judulHadir2','Judul Daftar Hadir (baris 2)'],['judulHadir3','Judul Daftar Hadir (baris 3)'],['judulBA2','Judul Berita Acara (baris 2)'],['judulBA3','Judul Berita Acara (baris 3)']];
 async function vSet(){const c=await post({act:'cfg'});
- $('#view').innerHTML=`<form class="panel" id="fset" style="max-width:520px"><h3>Pengaturan Sekolah</h3><label>Nama Sekolah<input name="sekolah" value="${esc(c.sekolah)}"></label><label>URL Logo (link gambar langsung)<input name="logo" value="${esc(c.logo)}"></label><label>Password Admin Baru (kosongkan jika tidak diganti)<input name="admin" type="password" autocomplete="new-password"></label><button class="btn">Simpan</button></form>`;
+ $('#view').innerHTML=`<form class="panel" id="fset" style="max-width:640px"><h3>Pengaturan Sekolah & Dokumen</h3>${FSET.map(([k,l,t])=>`<label>${l}${t=='ta'?`<textarea name="${k}" rows="2">${esc(c[k])}</textarea>`:`<input name="${k}" value="${esc(c[k])}">`}</label>`).join('')}<label>Password Admin Baru (kosongkan jika tidak diganti)<input name="admin" type="password" autocomplete="new-password"></label><button class="btn">Simpan</button></form>`;
  $('#fset').onsubmit=async e=>{e.preventDefault();const o=Object.fromEntries(new FormData(e.target)),r=await adm('a_cfg',{obj:o});if(!r.ok)return alert(r.msg);if(o.admin){AD=o.admin;sessionStorage.setItem('adm',AD)}$('#bn').textContent=o.sekolah||'CBT';if(o.logo)$('#blogo').src=o.logo;alert('Tersimpan')}}
 
 // ---------- CSV, Word & impor ----------

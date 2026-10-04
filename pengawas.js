@@ -8,7 +8,10 @@ async function login(){if(LB)return;const u=$('#u').value.trim(),p=$('#p').value
  const r=await post({act:'p_list',ruang:u,pw:p});LB=0;b.disabled=false;b.textContent='Masuk';
  if(!r.ok)return $('#lm').textContent=r.msg;U={u,p};sessionStorage.setItem('pgw',JSON.stringify(U));open_(r)}
 $('#lf').onsubmit=e=>{e.preventDefault();login()};['#u','#p'].forEach(i=>$(i).onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();login()}});
-function open_(r){$('#lg').hidden=true;$('#pn').hidden=false;$('#rn').textContent=r.ruang;S=r.siswa;prev=-1;draw();clearInterval(TM);TM=setInterval(()=>refresh(1),5000)}
+let RN='';
+const CTX=()=>({ruangs:[RN],mapels:async()=>{const r=await post({act:'p_mapel',ruang:U.u,pw:U.p});return r.ok?r.mapel:[]},get:(r,m,img)=>post({act:'p_doc',ruang:U.u,pw:U.p,mapel:m,img}),save:(r,m,t,o)=>post({act:'p_doc_save',ruang:U.u,pw:U.p,mapel:m,type:t,obj:o}),edit:(r,m,n,o)=>post({act:'p_hadir',ruang:U.u,pw:U.p,mapel:m,nis:n,...o})});
+$$('.ptabs button').forEach(b=>b.onclick=()=>{$$('.ptabs button').forEach(x=>x.classList.toggle('on',x==b));const t=b.dataset.t;$('#v-alarm').hidden=t!='alarm';$('#v-doc').hidden=t=='alarm';if(t!='alarm')DOC.mount($('#v-doc'),t,CTX())});
+function open_(r){RN=r.ruang;$('#lg').hidden=true;$('#pn').hidden=false;$('#rn').textContent=r.ruang;S=r.siswa;prev=-1;draw();clearInterval(TM);TM=setInterval(()=>refresh(1),5000)}
 async function refresh(q){if(!U||document.hidden)return;const r=await post({act:'p_list',ruang:U.u,pw:U.p},q);if(!r.ok){if(/salah/.test(r.msg||'')){sessionStorage.removeItem('pgw');location.reload()}return}S=r.siswa;draw()}
 function draw(){const n=S.filter(x=>x.alarm).length,f=$('#q').value.toLowerCase();
  if(n>prev&&prev>=0)beep();prev=n;
