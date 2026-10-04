@@ -31,6 +31,17 @@
   </div>
 </section>
 
+<section id="ttd" class="wrap" hidden>
+  <div class="card center">
+    <h2>✍ Tanda Tangan Kehadiran</h2>
+    <p class="muted" id="tnama"></p>
+    <p class="muted" style="font-size:.85rem">Ujian selesai. Silakan tanda tangan pada kotak di bawah, lalu tekan Simpan.</p>
+    <canvas id="sig" width="500" height="200"></canvas>
+    <div class="row" style="justify-content:center;margin-top:12px"><button class="btn ghost" id="sigclr" type="button">Hapus</button><button class="btn" id="sigsave" type="button" disabled>Simpan Tanda Tangan</button></div>
+    <p id="sigmsg" class="err"></p>
+  </div>
+</section>
+
 <section id="exam" hidden>
   <header class="bar"><b id="enama"></b><span id="timer">00:00</span></header>
   <div class="wrap exwrap">

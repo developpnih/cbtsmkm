@@ -4,3 +4,5 @@
 .srow .nm{flex:1;min-width:0}.srow .nm b{display:block;overflow:hidden;text-overflow:ellipsis}.srow small{color:var(--m)}
 .srow.al{border:2px solid var(--er);background:#dc262614}
 .srow .btn{white-space:nowrap}
+.ptabs{display:flex;gap:6px;padding:10px 16px;background:var(--c);border-bottom:1px solid var(--b);overflow-x:auto}.ptabs button{border:0;background:transparent;color:var(--t);padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer;white-space:nowrap}.ptabs .on{background:var(--p);color:#fff}
+#v-doc .panel{background:var(--c);border:1px solid var(--b);border-radius:14px;padding:16px}.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.88rem}th,td{padding:8px 10px;border-bottom:1px solid var(--b);text-align:left}

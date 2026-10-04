@@ -7,6 +7,7 @@
 <title>Pengawas Ruang</title>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="pengawas.css">
+<link rel="stylesheet" href="dokumen.css">
 </head>
 <body>
 <main>
@@ -23,7 +24,9 @@
 </section>
 <section id="pn" hidden>
   <header class="bar"><b>🚪 Ruang <span id="rn"></span></b><span id="ct" class="pill"></span><button class="btn ghost light sm" id="out">Keluar</button></header>
-  <div class="wrap wide pw">
+  <nav class="ptabs"><button data-t="alarm" class="on">🔔 Alarm</button><button data-t="hadir">🧾 Daftar Hadir</button><button data-t="ba">📄 Berita Acara</button></nav>
+  <div id="v-doc" class="wrap wide pw" hidden></div>
+  <div id="v-alarm" class="wrap wide pw">
     <div class="row"><input id="q" placeholder="🔍 Cari nama siswa..." class="grow"><button class="btn red" id="all">🔕 Matikan Semua Alarm</button></div>
     <p class="muted" id="upd"></p>
     <div id="list"></div>
@@ -31,6 +34,7 @@
 </section>
 </main>
 <script src="config.js"></script>
+<script src="dokumen.js"></script>
 <script src="pengawas.js"></script>
 </body>
 </html>

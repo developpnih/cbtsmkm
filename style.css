@@ -47,3 +47,4 @@ body.busy::before{content:'';position:fixed;top:0;left:0;height:3px;width:100%;b
 .btn:disabled{opacity:.55;cursor:wait}
 #fs{position:fixed;inset:0;z-index:90;background:#0f172a;color:#fff;display:grid;place-items:center;text-align:center;padding:24px}#fs h1{font-size:1.5rem}#fs .btn{margin-top:12px}
 .note{background:#fef3c7;color:#92400e;padding:8px 12px;border-radius:8px;margin-bottom:10px;font-size:.9rem}
+#sig{width:100%;max-width:500px;aspect-ratio:5/2;border:2px dashed var(--b);border-radius:12px;background:#fff;touch-action:none;cursor:crosshair;display:block;margin:10px auto 0}

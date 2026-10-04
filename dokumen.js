@@ -44,6 +44,14 @@ DOC.printBA=(d,b)=>{const c=d.cfg||{},f=t=>`<span class="f">${esc(t)||'&nbsp;&nb
  <p>b.&nbsp; Catatan selama pelaksanaan : <span class="cat">${esc(b.catatan).replace(/\n/g,'<br>')||'&nbsp;'}</span></p><p class="i1"><i>Berita acara ini dibuat dengan sesungguhnya.</i></p>
  <div class="bs"><div>Pengawas I,<br><br><br><br><b>${esc(b.p1)||'.'.repeat(30)}</b><br>NBM. ${esc(b.nbm1)}</div><div>Yang Membuat Berita Acara<br>Pengawas II,<br><br><br><b>${esc(b.p2)||'.'.repeat(30)}</b><br>NBM. ${esc(b.nbm2)}</div></div></div>`)};
 
+DOC.baDialog=async(ctx,ruang,mapel,done)=>{const d=await ctx.get(ruang,mapel,0);if(!d.ok)return alert(d.msg);const D=d,dl=DOC.dlg();
+ const draw=over=>{const b={...DOC.baVal(D,ruang),...(over||{})};
+  dl.innerHTML=`<form id="bdf" class="ba"><h3>Berita Acara · ${esc(ruang)} · ${esc(D.mapel.nama)}</h3><p class="muted">Terisi otomatis dari daftar hadir. Periksa dan ubah bila perlu.</p><div class="grid2">${BAF.map(([k,l])=>inp(k,l,b[k])).join('')}</div>${inp('catatan','Catatan selama pelaksanaan',b.catatan,'ta')}<div class="row" style="justify-content:flex-end"><button class="btn ghost" type="button" id="bdx">Tutup</button><button class="btn ghost" type="button" id="bdr">↻ Hitung Ulang</button><button class="btn ghost" type="button" id="bdp">🖨 Cetak</button><button class="btn" type="submit">💾 Simpan</button></div></form>`;
+  const cur=()=>Object.fromEntries(new FormData($('#bdf')));
+  $('#bdx').onclick=()=>dl.close();$('#bdr').onclick=()=>draw({...cur(),...DOC.baAuto(D)});
+  $('#bdp').onclick=async()=>{const o=cur();await ctx.save(ruang,mapel,'ba',o);D.ba=o;done&&done();DOC.printBA(D,o)};
+  $('#bdf').onsubmit=async e=>{e.preventDefault();const o=cur(),r=await ctx.save(ruang,mapel,'ba',o);if(!r.ok)return alert(r.msg);D.ba=o;dl.close();done&&done()}};
+ draw();dl.showModal()};
 // ---------- Tampilan (dipasang di admin & pengawas) ----------
 DOC.mount=async(box,mode,ctx)=>{const tok=++DOC.tok;clearInterval(DOC.tm);box.innerHTML='<p class="muted">Memuat...</p>';
  const mp=(await ctx.mapels())||[];if(tok!=DOC.tok)return;

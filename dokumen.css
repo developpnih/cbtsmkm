@@ -21,3 +21,4 @@
 .kv{border-collapse:collapse;font-size:13px}.kv td{padding:2px 6px;vertical-align:top}.kv td:first-child{width:120px}.kv2 td:first-child{width:130px}.kv2{border-collapse:collapse}.kv2 td{padding:1px 4px}
 .cat{display:inline-block;min-width:60%;border-bottom:1px dotted #000;vertical-align:top}
 .bs{display:flex;justify-content:space-between;margin-top:50px;font-size:13px}
+#ddlg{max-width:780px;width:calc(100% - 24px)}#ddlg form.ba{display:block}#ddlg form.ba .grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0 12px}
