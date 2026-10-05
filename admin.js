@@ -119,7 +119,12 @@ async function delSoal(ids,m){const kd=m?String(m.kode):String($('#um').value),n
  if(!n)return alert(ids?'Centang soal yang akan dihapus terlebih dahulu':'Mapel ini belum punya soal');
  if(!confirm(ids?`Hapus ${n} soal yang dicentang? Tindakan ini tidak dapat dibatalkan.`:`Hapus SEMUA ${n} soal pada mapel "${m.nama}" (${m.kode})? Tindakan ini tidak dapat dibatalkan.`))return;
  const set=ids?new Set(ids):null;SEL.clear();
- await mut('Soal','a_delsoal',null,l=>l.filter(x=>set?!(set.has(String(x.id))&&String(x.mapel)==kd):String(x.mapel)!=kd),ids?{list:ids,mapel:kd}:{mapel:kd})}
+ const all=D.filter(r=>String(r.mapel)==kd).map(r=>String(r.id)),del=ids?ids.map(String):all,bak=CA.Soal;
+ CA.Soal=(bak||[]).filter(x=>set?!(set.has(String(x.id))&&String(x.mapel)==kd):String(x.mapel)!=kd);ui();
+ let r=await adm('a_delsoal',{name:'Soal',obj:null,...(ids?{list:ids,mapel:kd}:{mapel:kd})});
+ // cadangan: bila Code.gs di server belum diperbarui (tidak mengenal a_delsoal), hapus satu per satu
+ if(!r.ok&&/tidak dikenal/i.test(r.msg||'')){let fail=0;for(const id of del){const x=await adm('a_del',{name:'Soal',obj:{id}});if(!x.ok)fail++}r=fail?{ok:0,msg:'Gagal menghapus '+fail+' soal'}:{ok:1}}
+ if(!r.ok){CA.Soal=bak;ui();alert(r.msg||'Gagal menghapus, coba lagi')}else setTimeout(()=>{CT.Soal=0;bg(['Soal'])},2500)}
 async function act(a,r){const k=K[T],ns=r.status=='nonaktif'||r.status=='blokir'?'aktif':(T=='Siswa'?'blokir':'nonaktif');
  if(a=='edit')return form(r);
  if(a=='prev')return preview(r);
