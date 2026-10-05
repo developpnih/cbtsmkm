@@ -23,8 +23,9 @@ const fsCheck=()=>{if(!inExam||!canFull)return;if(isFull())$('#fs').hidden=true;
 ['fullscreenchange','webkitfullscreenchange'].forEach(e=>document.addEventListener(e,fsCheck));$('#fsb').onclick=goFull;
 addEventListener('resize',()=>{if(!inExam)return;const a=innerWidth*innerHeight;if(a>MAXA)MAXA=a;else if(a<MAXA*.8)leave()});
 if(screen.addEventListener)screen.addEventListener('change',()=>{if(inExam&&screen.isExtended)leave()});
-let QUIET=0;const ask=t=>{QUIET=Infinity;let r;try{r=confirm(t)}finally{QUIET=Date.now()+2000}return r};
-function leave(){if(!inExam||Date.now()<QUIET)return;if(!ALM){if(Date.now()-LL>5000){LL=Date.now();post({act:'alarm',nis:U.nis,pw:U.pw},1)}return}const was=!!siren;alarmOn();if(!was)post({act:'alarm',nis:U.nis,pw:U.pw})}
+// konfirmasi dalam halaman (bukan confirm() bawaan browser) agar fokus jendela tidak hilang & alarm tidak terpicu
+let QUIET=0;const ask=t=>new Promise(res=>{const b=$('#cf');if(!b)return res(confirm(t));$('#cft').textContent=t;b.hidden=false;const done=v=>{QUIET=Date.now()+1500;b.hidden=true;res(v)};$('#cfy').onclick=()=>done(true);$('#cfn').onclick=()=>done(false);$('#cfy').focus()});
+function leave(){if(!inExam||FIN||Date.now()<QUIET)return;if(!ALM){if(Date.now()-LL>5000){LL=Date.now();post({act:'alarm',nis:U.nis,pw:U.pw},1)}return}const was=!!siren;alarmOn();if(!was)post({act:'alarm',nis:U.nis,pw:U.pw})}
 document.addEventListener('visibilitychange',()=>document.hidden&&leave());
 addEventListener('blur',leave);
 ['contextmenu','copy','cut','paste'].forEach(e=>document.addEventListener(e,x=>inExam&&x.preventDefault()));
@@ -56,7 +57,7 @@ function draw(){const q=Q[cur];if(!q)return;$('#qno').textContent=`Soal ${cur+1}
 $('#prev').onclick=()=>{cur--;draw()};$('#next').onclick=()=>{cur++;draw()};
 $('#finish').onclick=()=>finish(false);
 let FIN=0;
-async function finish(auto){if(FIN)return;const n=Q.filter(q=>!ans[q.id]).length;if(!auto&&!ask(n?`Masih ada ${n} soal belum dijawab. Kirim sekarang?`:'Kirim jawaban dan akhiri ujian?'))return;
+async function finish(auto){if(FIN)return;const n=Q.filter(q=>!ans[q.id]).length;if(!auto&&!(await ask(n?`Masih ada ${n} soal belum dijawab. Kirim sekarang?`:'Kirim jawaban dan akhiri ujian?')))return;
  FIN=1;clearInterval(tm);const r=await post({act:'submit',nis:U.nis,pw:U.pw,mapel:U.cur,jawab:ans},0,{tries:8});FIN=0;
  if(!r.ok){netNote('Jawaban belum terkirim ('+(r.msg||'koneksi bermasalah')+'). Jawaban Anda aman di perangkat ini, mencoba lagi otomatis…');tm=setInterval(()=>finish(true),5000);return}
  netNote('');clearInterval(tm);inExam=0;$('#fs').hidden=true;alarmOff();localStorage.removeItem('a'+U.nis+U.cur);document.fullscreenElement&&document.exitFullscreen();
