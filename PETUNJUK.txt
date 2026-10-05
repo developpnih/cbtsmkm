@@ -50,3 +50,10 @@ Menu admin "Pengaturan Alarm": ON/OFF alarm pelanggaran (hanya admin). Jika OFF,
 UPDATE DAFTAR HADIR: kolom Kelas & Nilai sebelum Tanda Tangan, Proktor/Pengawas -> Pengawas 1/Pengawas 2, logo kini UPLOAD (Admin > Pengaturan).
 Upload ulang: admin.js, admin.css, dokumen.js, dokumen.css, script.js, pengawas.js. Ganti Code.gs lalu Deploy > New version.
 Logo lama berupa link perlu diupload ulang sebagai gambar.
+
+UPDATE HAPUS SOAL & KONEKSI LEMAH:
+- Bank Soal: centang soal lalu klik "Hapus Terpilih", atau "Hapus Semua Soal" untuk seluruh soal pada mapel yang dipilih. Tombol Hapus per baris tetap ada.
+- Menghapus Mapel otomatis menghapus semua soal, sesi ujian, dan gambar soalnya. Nilai siswa yang sudah masuk TIDAK dihapus.
+- Koneksi: permintaan kini punya batas waktu + coba ulang otomatis (sampai 4x, jeda bertahap) dan banner status jaringan.
+  Permintaan yang mengubah data aman diulang (server menolak duplikat). Pengiriman jawaban akhir dicoba hingga 8x lalu terus otomatis tiap 5 detik.
+- Upload ULANG: config.js (URL Web App di baris API JANGAN berubah), script.js, admin.js. Ganti Code.gs -> Deploy > Manage deployments > Edit > New version.

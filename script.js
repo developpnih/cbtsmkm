@@ -3,8 +3,12 @@ const show=id=>$$('main>section').forEach(s=>s.hidden=s.id!=id);
 let U,Q=[],ans={},cur=0,end=0,tm,inExam=0,cfg={sekolah:'',logo:''};
 
 // ---------- Init ----------
-(async()=>{const c=await post({act:'cfg'});if(c.ok){cfg=c;$('#sname').textContent=c.sekolah;document.title='CBT '+c.sekolah;}})();
-{const lc=localStorage.getItem('cbt_logo');if(lc)$$('.logo').forEach(i=>i.src=lc);post({act:'logo'},1).then(l=>{if(!l.ok)return;if(l.logo){try{localStorage.setItem('cbt_logo',l.logo)}catch(e){}$$('.logo').forEach(i=>i.src=l.logo)}else localStorage.removeItem('cbt_logo')})}
+const applyCfg=c=>{cfg=c;$('#sname').textContent=c.sekolah||'';document.title='CBT '+(c.sekolah||'')};
+// Nama sekolah & logo disimpan di perangkat (segar 30 menit) -> halaman login tidak membebani server saat ratusan siswa membuka bersamaan
+{let cc=null;try{cc=JSON.parse(localStorage.getItem('cbt_cfg')||'null')}catch(e){}
+ if(cc&&cc.c)applyCfg(cc.c);const lc=localStorage.getItem('cbt_logo');if(lc)$$('.logo').forEach(i=>i.src=lc);
+ if(!cc||Date.now()-cc.t>1800000)setTimeout(async()=>{const c=await post({act:'cfg'},1,{tries:3});if(c.ok){applyCfg(c);try{localStorage.setItem('cbt_cfg',JSON.stringify({t:Date.now(),c}))}catch(e){}}
+  const l=await post({act:'logo'},1,{tries:2});if(!l.ok)return;if(l.logo){try{localStorage.setItem('cbt_logo',l.logo)}catch(e){}$$('.logo').forEach(i=>i.src=l.logo)}else localStorage.removeItem('cbt_logo')},cc?Math.random()*6000:0)}
 
 // ---------- Alarm ----------
 let AC,siren;
@@ -28,8 +32,8 @@ addEventListener('blur',leave);
 
 // ---------- Siswa ----------
 let LB=0;const doLogin=async()=>{if(LB)return;const nis=$('#nis').value.trim(),pw=$('#pw').value.trim();if(!nis||!pw)return $('#lmsg').textContent='Isi NIS dan password';LB=1;unlock();goFull();const b=$('#fl button');b.disabled=true;b.textContent='Memeriksa...';$('#lmsg').textContent='';
- const r=await post({act:'login',nis,pw});LB=0;b.disabled=false;b.textContent='Masuk Ujian';if(!r.ok){isFull()&&document.exitFullscreen&&document.exitFullscreen();return $('#lmsg').textContent=r.msg}
- U={nis,pw,...r};SK=r.now-Date.now();ALM=r.alm!==false;post({act:'hadir',nis,pw},1);const p=r.mapel.filter(m=>!m.done);if(p.length==1&&(!p[0].jd||Date.now()+SK>=p[0].jd))start(p[0].kode);else menu()};
+ const slow=setTimeout(()=>{b.textContent='Menunggu server...'},6000);const r=await post({act:'login',nis,pw},0,{tries:3,timeout:20000});clearTimeout(slow);LB=0;b.disabled=false;b.textContent='Masuk Ujian';if(!r.ok){isFull()&&document.exitFullscreen&&document.exitFullscreen();return $('#lmsg').textContent=r.msg}
+ U={nis,pw,...r};SK=r.now-Date.now();ALM=r.alm!==false;setTimeout(()=>post({act:'hadir',nis,pw},1,{tries:3}),1500+Math.random()*5000);const p=r.mapel.filter(m=>!m.done);if(p.length==1&&(!p[0].jd||Date.now()+SK>=p[0].jd))start(p[0].kode);else menu()};
 $('#fl').onsubmit=e=>{e.preventDefault();doLogin()};['#nis','#pw'].forEach(i=>$(i).onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();doLogin()}});
 $('#logout').onclick=()=>{U=null;show('login');$('#fl').reset()};
 function menu(msg,bad){MSG=msg;show('menu');clearTimeout(MT);MT=setTimeout(()=>{if(U&&!$('#menu').hidden)menu(MSG,bad)},5000);const now=Date.now()+SK;$('#mnama').textContent=U.nama;$('#mkelas').textContent='Kelas '+U.kelas+' · NIS '+U.nis;
@@ -50,10 +54,11 @@ function draw(){const q=Q[cur];if(!q)return;$('#qno').textContent=`Soal ${cur+1}
  $('#prev').disabled=!cur;$('#next').disabled=cur==Q.length-1}
 $('#prev').onclick=()=>{cur--;draw()};$('#next').onclick=()=>{cur++;draw()};
 $('#finish').onclick=()=>finish(false);
-async function finish(auto){const n=Q.filter(q=>!ans[q.id]).length;if(!auto&&!confirm(n?`Masih ada ${n} soal belum dijawab. Kirim sekarang?`:'Kirim jawaban dan akhiri ujian?'))return;
- clearInterval(tm);const r=await post({act:'submit',nis:U.nis,pw:U.pw,mapel:U.cur,jawab:ans});
- if(!r.ok){alert(r.msg+' — mencoba lagi...');tm=setInterval(()=>finish(true),5000);return}
- clearInterval(tm);inExam=0;$('#fs').hidden=true;alarmOff();localStorage.removeItem('a'+U.nis+U.cur);document.fullscreenElement&&document.exitFullscreen();
+let FIN=0;
+async function finish(auto){if(FIN)return;const n=Q.filter(q=>!ans[q.id]).length;if(!auto&&!confirm(n?`Masih ada ${n} soal belum dijawab. Kirim sekarang?`:'Kirim jawaban dan akhiri ujian?'))return;
+ FIN=1;clearInterval(tm);const r=await post({act:'submit',nis:U.nis,pw:U.pw,mapel:U.cur,jawab:ans},0,{tries:8});FIN=0;
+ if(!r.ok){netNote('Jawaban belum terkirim ('+(r.msg||'koneksi bermasalah')+'). Jawaban Anda aman di perangkat ini, mencoba lagi otomatis…');tm=setInterval(()=>finish(true),5000);return}
+ netNote('');clearInterval(tm);inExam=0;$('#fs').hidden=true;alarmOff();localStorage.removeItem('a'+U.nis+U.cur);document.fullscreenElement&&document.exitFullscreen();
  U.mapel.forEach(m=>{if(m.kode==U.cur)m.done=true});signPad(U.cur)}
 
 
@@ -71,3 +76,6 @@ $('#sigsave').onclick=async()=>{const b=$('#sigsave');b.disabled=true;b.textCont
  const r=await post({act:'ttd',nis:U.nis,pw:U.pw,mapel:SIGK,data:d});b.textContent='Simpan Tanda Tangan';b.disabled=false;
  if(!r.ok)return $('#sigmsg').textContent=r.msg||'Gagal menyimpan, coba lagi';
  const m=U.mapel.find(x=>x.kode==SIGK);if(m)m.ttd=true;menu('Terima kasih. Jawaban dan kehadiran Anda sudah tercatat.')};
+
+// kembali online saat waktu sudah habis & jawaban belum terkirim -> kirim segera
+addEventListener('online',()=>{if(U&&inExam&&!FIN&&Date.now()>=end)finish(true)});
