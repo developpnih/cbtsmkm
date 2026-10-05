@@ -33,7 +33,7 @@ addEventListener('blur',leave);
 // ---------- Siswa ----------
 let LB=0;const doLogin=async()=>{if(LB)return;const nis=$('#nis').value.trim(),pw=$('#pw').value.trim();if(!nis||!pw)return $('#lmsg').textContent='Isi NIS dan password';LB=1;unlock();goFull();const b=$('#fl button');b.disabled=true;b.textContent='Memeriksa...';$('#lmsg').textContent='';
  const slow=setTimeout(()=>{b.textContent='Menunggu server...'},6000);const r=await post({act:'login',nis,pw},0,{tries:3,timeout:20000});clearTimeout(slow);LB=0;b.disabled=false;b.textContent='Masuk Ujian';if(!r.ok){isFull()&&document.exitFullscreen&&document.exitFullscreen();return $('#lmsg').textContent=r.msg}
- U={nis,pw,...r};SK=r.now-Date.now();ALM=r.alm!==false;setTimeout(()=>post({act:'hadir',nis,pw},1,{tries:3}),1500+Math.random()*5000);const p=r.mapel.filter(m=>!m.done);if(p.length==1&&(!p[0].jd||Date.now()+SK>=p[0].jd))start(p[0].kode);else menu()};
+ U={nis,pw,...r};SK=r.now-Date.now();ALM=r.alm!==false;const p=r.mapel.filter(m=>!m.done);if(p.length==1&&(!p[0].jd||Date.now()+SK>=p[0].jd))start(p[0].kode);else menu()};
 $('#fl').onsubmit=e=>{e.preventDefault();doLogin()};['#nis','#pw'].forEach(i=>$(i).onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();doLogin()}});
 $('#logout').onclick=()=>{U=null;show('login');$('#fl').reset()};
 function menu(msg,bad){MSG=msg;show('menu');clearTimeout(MT);MT=setTimeout(()=>{if(U&&!$('#menu').hidden)menu(MSG,bad)},5000);const now=Date.now()+SK;$('#mnama').textContent=U.nama;$('#mkelas').textContent='Kelas '+U.kelas+' · NIS '+U.nis;

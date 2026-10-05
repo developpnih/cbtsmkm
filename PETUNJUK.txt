@@ -57,3 +57,6 @@ UPDATE HAPUS SOAL & KONEKSI LEMAH:
 - Koneksi: permintaan kini punya batas waktu + coba ulang otomatis (sampai 4x, jeda bertahap) dan banner status jaringan.
   Permintaan yang mengubah data aman diulang (server menolak duplikat). Pengiriman jawaban akhir dicoba hingga 8x lalu terus otomatis tiap 5 detik.
 - Upload ULANG: config.js (URL Web App di baris API JANGAN berubah), script.js, admin.js. Ganti Code.gs -> Deploy > Manage deployments > Edit > New version.
+
+UPDATE ABSEN: kehadiran TIDAK lagi dicatat saat login/mulai ujian. Siswa dicatat hadir hanya saat menyimpan tanda tangan di akhir ujian (pengawas/admin tetap bisa menandai hadir manual).
+Upload ulang script.js, ganti Code.gs lalu Deploy > New version.
