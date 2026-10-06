@@ -10,7 +10,7 @@ const IM=/\[img:((?:https:\/\/|data:image\/(?:jpeg|png);base64,)[^\]\s]+)\]/g,ri
 let BZ=0,NBE,NBT;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const READ=/^(cfg|logo|login|poll|start|a_list|a_multi|a_preview|a_doc|a_poll|p_list|p_mapel|p_doc)$/,
- SLOW=/^(a_dup|a_import|a_img|submit|ttd|a_cfg|a_doc_save|p_doc_save)$/,
+ SLOW=/^(a_dup|a_import|a_img|submit|ttd|a_cfg|a_doc_save|p_doc_save|a_multi|a_doc|p_doc)$/,
  TRANSIENT=/lock|time ?out|too many|many times|try again|busy|overload|quota|unavailable|temporar|server error/i;
 function netNote(t,ms){ // banner status koneksi (aria-live agar terbaca pembaca layar)
  if(!NBE){if(!t)return;NBE=document.createElement('div');NBE.setAttribute('role','status');NBE.setAttribute('aria-live','polite');
@@ -26,7 +26,7 @@ const post=async(b,quiet,o)=>{o=o||{};
  if(!quiet){BZ++;document.body.classList.add('busy')}
  try{
   for(let i=0;i<max;i++){
-   if(i){if(!quiet)netNote('Koneksi lemah, mencoba lagi ('+(i+1)+'/'+max+')…');await sleep(Math.min(8000,800*2**(i-1))+Math.random()*600)}
+   if(i){if(!quiet)netNote('Server sibuk / koneksi lemah, mencoba lagi ('+(i+1)+'/'+max+')…');await sleep(Math.min(10000,1000*2**(i-1))+Math.random()*2500)}
    if(!quiet&&navigator.onLine===false){netNote('Tidak ada koneksi internet. Menunggu jaringan…');await waitOnline(20000)}
    try{const r=await once(b,tmo);if(r&&r.ok===0&&TRANSIENT.test(r.msg||'')&&i<max-1){last=r;continue}return r}
    catch(e){last=null}

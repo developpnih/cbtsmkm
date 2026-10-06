@@ -29,8 +29,8 @@ function leave(){if(!inExam||FIN||Date.now()<QUIET)return;if(!ALM){if(Date.now()
 document.addEventListener('visibilitychange',()=>document.hidden&&leave());
 addEventListener('blur',leave);
 ['contextmenu','copy','cut','paste'].forEach(e=>document.addEventListener(e,x=>inExam&&x.preventDefault()));
-(function pl(){setTimeout(async()=>{if(U&&inExam){const r=await post({act:'poll',nis:U.nis},1);if(r.ok){ALM=r.alm!==false;if(!ALM)alarmOff();if(r.blokir){inExam=0;alarmOff();alert('Akses Anda diblokir oleh pengawas.');location.reload()}
- if(r.alarm){alarmOn();if(siren)siren.ack=1}else if(siren&&siren.ack)alarmOff();else if(siren&&Date.now()-siren.t0>12000){siren.t0=Date.now();post({act:'alarm',again:1,nis:U.nis,pw:U.pw},1)}}}pl()},(siren?4000:15000)+Math.random()*3000)})();
+(function pl(){setTimeout(async()=>{if(U&&inExam&&!FIN&&!BZ){const r=await post({act:'poll',nis:U.nis},1);if(r.ok){ALM=r.alm!==false;if(!ALM)alarmOff();if(r.blokir){inExam=0;alarmOff();alert('Akses Anda diblokir oleh pengawas.');location.reload()}
+ if(r.alarm){alarmOn();if(siren)siren.ack=1}else if(siren&&siren.ack)alarmOff();else if(siren&&Date.now()-siren.t0>12000){siren.t0=Date.now();post({act:'alarm',again:1,nis:U.nis,pw:U.pw},1)}}}pl()},(siren?4000:30000)+Math.random()*8000)})();
 
 // ---------- Siswa ----------
 let LB=0;const doLogin=async()=>{if(LB)return;const nis=$('#nis').value.trim(),pw=$('#pw').value.trim();if(!nis||!pw)return $('#lmsg').textContent='Isi NIS dan password';LB=1;unlock();goFull();const b=$('#fl button');b.disabled=true;b.textContent='Memeriksa...';$('#lmsg').textContent='';
@@ -50,8 +50,8 @@ async function start(k){unlock();goFull();if(screen.isExtended){menu('Terdeteksi
  show('exam');build();clearInterval(tm);tm=setInterval(tick,1000);tick();
  const en=$('#enote');en.hidden=!(r.telat>0);if(r.telat>0)en.textContent='Anda terlambat '+r.telat+' menit. Waktu pengerjaan Anda dikurangi menjadi '+Math.ceil(r.sisa/60)+' menit.';
  MAXA=innerWidth*innerHeight;if(canFull&&!isFull())$('#fs').hidden=false}
-let TOT=1;
-function tick(){const s=Math.max(0,Math.round((end-Date.now())/1000)),t=$('#timer');t.textContent=[Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,'0')).join(':');$('#tbox').classList.toggle('low',s<300);$('#tprog').style.transform='scaleX('+Math.min(1,s/TOT)+')';if(!s)finish(true)}
+let TOT=1,AUT=0; // AUT: jeda acak sebelum kirim otomatis saat waktu habis, supaya ratusan siswa tidak menekan server di detik yang sama
+function tick(){const s=Math.max(0,Math.round((end-Date.now())/1000)),t=$('#timer');t.textContent=[Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,'0')).join(':');$('#tbox').classList.toggle('low',s<300);$('#tprog').style.transform='scaleX('+Math.min(1,s/TOT)+')';if(!s&&!AUT){AUT=1;clearInterval(tm);setTimeout(()=>{AUT=0;finish(true)},Math.random()*5000)}}
 // build(): dipanggil sekali per ujian (membuat kotak nomor). show(): tampilkan 1 soal. mark(): hanya ubah kelas CSS (tanpa render ulang).
 function build(){$('#grid').innerHTML=Q.map((x,i)=>`<button data-i="${i}">${i+1}</button>`).join('');showQ()}
 function showQ(){const q=Q[cur];if(!q)return;$('#qno').textContent=`Soal ${cur+1} dari ${Q.length}`;$('#qtext').innerHTML=q._h;
