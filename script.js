@@ -30,7 +30,7 @@ document.addEventListener('visibilitychange',()=>document.hidden&&leave());
 addEventListener('blur',leave);
 ['contextmenu','copy','cut','paste'].forEach(e=>document.addEventListener(e,x=>inExam&&x.preventDefault()));
 (function pl(){setTimeout(async()=>{if(U&&inExam){const r=await post({act:'poll',nis:U.nis},1);if(r.ok){ALM=r.alm!==false;if(!ALM)alarmOff();if(r.blokir){inExam=0;alarmOff();alert('Akses Anda diblokir oleh pengawas.');location.reload()}
- if(r.alarm){alarmOn();if(siren)siren.ack=1}else if(siren&&siren.ack)alarmOff();else if(siren&&Date.now()-siren.t0>12000){siren.t0=Date.now();post({act:'alarm',again:1,nis:U.nis,pw:U.pw},1)}}}pl()},siren?4000:15000)})();
+ if(r.alarm){alarmOn();if(siren)siren.ack=1}else if(siren&&siren.ack)alarmOff();else if(siren&&Date.now()-siren.t0>12000){siren.t0=Date.now();post({act:'alarm',again:1,nis:U.nis,pw:U.pw},1)}}}pl()},(siren?4000:15000)+Math.random()*3000)})();
 
 // ---------- Siswa ----------
 let LB=0;const doLogin=async()=>{if(LB)return;const nis=$('#nis').value.trim(),pw=$('#pw').value.trim();if(!nis||!pw)return $('#lmsg').textContent='Isi NIS dan password';LB=1;unlock();goFull();const b=$('#fl button');b.disabled=true;b.textContent='Memeriksa...';$('#lmsg').textContent='';
@@ -39,22 +39,30 @@ let LB=0;const doLogin=async()=>{if(LB)return;const nis=$('#nis').value.trim(),p
 $('#fl').onsubmit=e=>{e.preventDefault();doLogin()};['#nis','#pw'].forEach(i=>$(i).onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();doLogin()}});
 $('#logout').onclick=()=>{U=null;show('login');$('#fl').reset()};
 function menu(msg,bad){MSG=msg;show('menu');clearTimeout(MT);MT=setTimeout(()=>{if(U&&!$('#menu').hidden)menu(MSG,bad)},5000);const now=Date.now()+SK;$('#mnama').textContent=U.nama;$('#mkelas').textContent='Kelas '+U.kelas+' · NIS '+U.nis;
- $('#mlist').innerHTML=(msg?`<p class="err" style="color:var(${bad?'--er':'--ok'})">${esc(msg)}</p>`:'')+(U.mapel.length?U.mapel.map(m=>`<div class="ex"><div><b>${esc(m.nama)}</b><div class="muted">${m.durasi} menit${m.jd?' · '+fmtJ(m.jd):''}</div></div>${m.done?(m.ttd?'<span class="tag">Selesai ✔</span>':`<button class="btn" data-s="${esc(m.kode)}">✍ Tanda tangan</button>`):m.jd&&now<m.jd?`<button class="btn" disabled>Mulai ${hm(m.jd)}</button>`:`<button class="btn" data-k="${esc(m.kode)}">Mulai</button>`}</div>`).join(''):'<p class="muted">Belum ada ujian yang aktif.</p>');
+ $('#mlist').innerHTML=(msg?`<p class="err" style="color:var(${bad?'--er':'--ok'})">${esc(msg)}</p>`:'')+(U.mapel.length?U.mapel.map(m=>`<div class="ex"><div><b>${esc(m.nama)}</b>${m.sus?'<span class="tag sus">Susulan</span>':''}<div class="muted">${m.durasi} menit${m.jd?' · '+fmtJ(m.jd):''}</div></div>${m.done?(m.ttd?'<span class="tag">Selesai ✔</span>':`<button class="btn" data-s="${esc(m.kode)}">✍ Tanda tangan</button>`):m.jd&&now<m.jd?`<button class="btn" disabled>Mulai ${hm(m.jd)}</button>`:`<button class="btn" data-k="${esc(m.kode)}">Mulai</button>`}</div>`).join(''):'<p class="muted">Belum ada ujian yang aktif.</p>');
  $$('#mlist [data-k]').forEach(b=>b.onclick=()=>start(b.dataset.k));$$('#mlist [data-s]').forEach(b=>b.onclick=()=>signPad(b.dataset.s))}
 async function start(k){unlock();goFull();if(screen.isExtended){menu('Terdeteksi layar ganda (monitor kedua). Lepaskan monitor tambahan lalu coba lagi.',1);return}
- const r=await post({act:'start',nis:U.nis,pw:U.pw,mapel:k});if(!r.ok){if(r.jd)SK=r.now-Date.now();menu(r.msg+(r.jd?' Mulai pukul '+hm(r.jd)+'.':''),1);return}
- U.cur=k;Q=r.soal;ans=JSON.parse(localStorage.getItem('a'+U.nis+k)||'{}');cur=0;end=Date.now()+r.sisa*1000;inExam=1;
- $('#enama').textContent=r.nama;show('exam');draw();clearInterval(tm);tm=setInterval(tick,1000);tick();
+ const r=await post({act:'start',nis:U.nis,pw:U.pw,mapel:k},0,{tries:4,timeout:45000});if(!r.ok){if(r.jd)SK=r.now-Date.now();menu(r.msg+(r.jd?' Mulai pukul '+hm(r.jd)+'.':''),1);return}
+ U.cur=k;Q=r.soal;ans=JSON.parse(localStorage.getItem('a'+U.nis+k)||'{}');cur=0;end=Date.now()+r.sisa*1000;TOT=Math.max(1,r.sisa);inExam=1;
+ // HTML soal & opsi dihitung SEKALI (gambar base64 besar tidak diproses ulang tiap klik -> tidak lemot di HP)
+ Q.forEach(q=>{q._h=rich(q.soal);q.opsi.forEach(o=>o._h=rich(o.t))});
+ $('#enama').textContent=r.nama;$('#eswa').textContent=U.nama+' · Kelas '+U.kelas;
+ show('exam');build();clearInterval(tm);tm=setInterval(tick,1000);tick();
  const en=$('#enote');en.hidden=!(r.telat>0);if(r.telat>0)en.textContent='Anda terlambat '+r.telat+' menit. Waktu pengerjaan Anda dikurangi menjadi '+Math.ceil(r.sisa/60)+' menit.';
  MAXA=innerWidth*innerHeight;if(canFull&&!isFull())$('#fs').hidden=false}
-function tick(){const s=Math.max(0,Math.round((end-Date.now())/1000)),t=$('#timer');t.textContent=[Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,'0')).join(':');t.classList.toggle('low',s<300);if(!s)finish(true)}
-function draw(){const q=Q[cur];if(!q)return;$('#qno').textContent=`Soal ${cur+1} dari ${Q.length}`;$('#qtext').innerHTML=rich(q.soal);
- $('#opts').innerHTML=q.opsi.map(o=>`<button class="opt ${ans[q.id]==o.k?'sel':''}" data-k="${o.k}"><b>${o.k}</b><span>${rich(o.t)}</span></button>`).join('');
- $$('#opts .opt').forEach(b=>b.onclick=()=>{ans[q.id]=b.dataset.k;localStorage.setItem('a'+U.nis+U.cur,JSON.stringify(ans));draw()});
- $('#grid').innerHTML=Q.map((x,i)=>`<button class="${ans[x.id]?'done':''} ${i==cur?'cur':''}" data-i="${i}">${i+1}</button>`).join('');
- $$('#grid button').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;draw()});
- $('#prev').disabled=!cur;$('#next').disabled=cur==Q.length-1}
-$('#prev').onclick=()=>{cur--;draw()};$('#next').onclick=()=>{cur++;draw()};
+let TOT=1;
+function tick(){const s=Math.max(0,Math.round((end-Date.now())/1000)),t=$('#timer');t.textContent=[Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,'0')).join(':');$('#tbox').classList.toggle('low',s<300);$('#tprog').style.transform='scaleX('+Math.min(1,s/TOT)+')';if(!s)finish(true)}
+// build(): dipanggil sekali per ujian (membuat kotak nomor). show(): tampilkan 1 soal. mark(): hanya ubah kelas CSS (tanpa render ulang).
+function build(){$('#grid').innerHTML=Q.map((x,i)=>`<button data-i="${i}">${i+1}</button>`).join('');showQ()}
+function showQ(){const q=Q[cur];if(!q)return;$('#qno').textContent=`Soal ${cur+1} dari ${Q.length}`;$('#qtext').innerHTML=q._h;
+ $('#opts').innerHTML=q.opsi.map(o=>`<button class="opt" data-k="${o.k}"><b>${o.k}</b><span>${o._h}</span></button>`).join('');
+ $('#prev').disabled=!cur;$('#next').disabled=cur==Q.length-1;mark();scrollTo(0,0)}
+function mark(){const q=Q[cur];if(!q)return;$$('#opts .opt').forEach(b=>b.classList.toggle('sel',ans[q.id]==b.dataset.k));
+ const g=$('#grid').children;for(let i=0;i<g.length;i++){g[i].classList.toggle('done',!!ans[Q[i].id]);g[i].classList.toggle('cur',i==cur)}
+ $('#qans').textContent='Terjawab '+Q.filter(x=>ans[x.id]).length+' / '+Q.length}
+$('#opts').onclick=e=>{const b=e.target.closest('.opt');if(!b)return;const q=Q[cur];ans[q.id]=b.dataset.k;try{localStorage.setItem('a'+U.nis+U.cur,JSON.stringify(ans))}catch(x){}mark()};
+$('#grid').onclick=e=>{const b=e.target.closest('button');if(!b)return;cur=+b.dataset.i;showQ()};
+$('#prev').onclick=()=>{cur--;showQ()};$('#next').onclick=()=>{cur++;showQ()};
 $('#finish').onclick=()=>finish(false);
 let FIN=0;
 async function finish(auto){if(FIN)return;const n=Q.filter(q=>!ans[q.id]).length;if(!auto&&!(await ask(n?`Masih ada ${n} soal belum dijawab. Kirim sekarang?`:'Kirim jawaban dan akhiri ujian?')))return;

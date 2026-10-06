@@ -60,3 +60,13 @@ UPDATE HAPUS SOAL & KONEKSI LEMAH:
 
 UPDATE ABSEN: kehadiran TIDAK lagi dicatat saat login/mulai ujian. Siswa dicatat hadir hanya saat menyimpan tanda tangan di akhir ujian (pengawas/admin tetap bisa menandai hadir manual).
 Upload ulang script.js, ganti Code.gs lalu Deploy > New version.
+
+UPDATE SUSULAN + PERFORMA + TAMPILAN UJIAN:
+1. Code.gs (file baru): ganti isi Apps Script -> jalankan fungsi "setup" sekali -> Deploy > Manage deployments > Edit > New version.
+2. Upload ulang: index.html, style.css, script.js, admin.js, admin.css, config.js.
+   config.js: URL Web App di baris API SUDAH berisi URL lama Anda, tetapi cek kembali bila Anda sudah mengganti deployment.
+UJIAN SUSULAN: Admin > Mapel & Ujian > tombol "📋 Susulan" pada baris ujian. Soal disalin otomatis (id baru), pilih peserta (atau kosongkan =
+ semua siswa kelas tujuan yang BELUM mengerjakan ujian asal). Siswa yang sudah mengerjakan ujian asal tidak melihat susulan. Daftar Hadir &
+ Berita Acara susulan otomatis hanya memuat peserta susulan. Nonaktifkan ujian asal bila siswa lain tidak boleh membukanya lagi.
+PERFORMA: data siswa/mapel/soal kini di-cache di server (otomatis diperbarui saat admin mengubah data); polling admin & pengawas jauh lebih ringan;
+ tampilan soal tidak dirender ulang tiap klik jawaban. Saran: bagi siswa ke beberapa sesi/ruang dan beri selisih jadwal 5-10 menit bila >300 siswa.

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>CBT</title>
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <main>
@@ -43,16 +43,25 @@
 </section>
 
 <section id="exam" hidden>
-  <header class="bar"><b id="enama"></b><span id="timer">00:00</span></header>
+  <header class="bar">
+    <div class="eid"><span class="ico">📘</span><div><b id="enama"></b><small id="eswa"></small></div></div>
+    <div class="tbox" id="tbox"><span>Sisa Waktu</span><b id="timer">00:00:00</b></div>
+    <i class="tprog" id="tprog"></i>
+  </header>
   <div class="wrap exwrap">
-    <div class="card">
+    <div class="card qcard">
       <div class="note" id="enote" hidden></div>
-      <div class="muted" id="qno"></div>
+      <div class="qhead"><span class="qpill" id="qno"></span><span class="qpill soft" id="qans"></span></div>
       <div id="qtext" class="qtext"></div>
       <div id="opts"></div>
       <div class="row nav"><button class="btn ghost" id="prev">‹ Sebelumnya</button><button class="btn" id="next">Berikutnya ›</button></div>
     </div>
-    <div class="card"><div id="grid" class="grid"></div><button class="btn ok" id="finish">Selesai &amp; Kirim</button></div>
+    <aside class="card nside">
+      <h3>Navigasi Soal</h3>
+      <div id="grid" class="grid"></div>
+      <div class="legend"><span><i class="lg done"></i>Terjawab</span><span><i class="lg"></i>Belum</span><span><i class="lg cur"></i>Sekarang</span></div>
+      <button class="btn ok" id="finish">Selesai &amp; Kirim</button>
+    </aside>
   </div>
 </section>
 </main>
@@ -61,6 +70,6 @@
 <div id="warn" hidden><div>⚠️<h1>PERINGATAN!</h1><p>Anda meninggalkan halaman ujian.<br>Hubungi pengawas untuk mematikan alarm.</p></div></div>
 <script src="config.js"></script>
 <div id="cf" hidden><div><p id="cft"></p><div class="row"><button class="btn" id="cfy" type="button">OK</button><button class="btn ghost" id="cfn" type="button">Batal</button></div></div></div>
-<script src="script.js?v=4"></script>
+<script src="script.js?v=6"></script>
 </body>
 </html>

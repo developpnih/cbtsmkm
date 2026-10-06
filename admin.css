@@ -36,3 +36,5 @@ label.chk input{width:auto;margin:0}
 .sw{display:flex;align-items:center;gap:12px;margin:16px 0;cursor:pointer}.sw input{display:none}.slider{width:56px;height:30px;border-radius:99px;background:#94a3b8;position:relative;transition:.2s;flex:none}.slider::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s}.sw input:checked+.slider{background:var(--ok)}.sw input:checked+.slider::after{left:29px}
 .sw b{font-size:1.1rem}
 .lgbox{margin-bottom:12px}.lgbox>label{display:block;font-weight:600;margin-bottom:6px}.lgpv{width:64px;height:64px;object-fit:contain;border:1px solid var(--b);border-radius:8px;background:#fff}
+
+label.chk.dr{display:flex;border-radius:8px;margin:3px 0;padding:6px 10px}
